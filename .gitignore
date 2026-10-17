@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Datos crudos: el cuaderno los descarga de datos.gov.co y NO se versionan
+data/
+datos/
+*.csv
+*.parquet
