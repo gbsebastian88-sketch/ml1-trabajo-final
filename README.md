@@ -1,37 +1,51 @@
-# Predicción de sobrecostos en contratos públicos (SECOP II)
+# Priorización de contratos públicos con riesgo de sobrecosto (SECOP II)
 
-Trabajo final de **Machine Learning I** (Maestría).
+Trabajo final de **Machine Learning I** (Maestría, Universidad EAN).
 
-Modelo de clasificación que estima, **en el momento de adjudicar** un proceso de contratación pública en Colombia, si el contrato terminará costando más de lo adjudicado. El objetivo práctico es ordenar los contratos por riesgo para que un equipo de control con capacidad limitada revise primero los más probables.
+Modelo de clasificación que estima, **en el momento de adjudicar** un proceso de contratación pública en Colombia, la probabilidad de que el contrato termine costando más de lo adjudicado. Con esa probabilidad se **ordenan por riesgo los contratos vigentes de 2025 y 2026 que todavía no tienen adiciones**, para que un equipo de control con capacidad limitada revise primero los más riesgosos. El modelo estima si ocurre un sobrecosto, **no su monto**.
 
 - **Cuaderno:** [`notebooks/sobrecosto_secop.ipynb`](notebooks/sobrecosto_secop.ipynb) · [abrir en Colab](https://colab.research.google.com/github/kimmoreno03/ml1-trabajo-final/blob/main/notebooks/sobrecosto_secop.ipynb)
+- **Página de resultados:** [kimmoreno03.github.io/ml1-trabajo-final](https://kimmoreno03.github.io/ml1-trabajo-final/) · código en [`docs/`](docs/); los datos de [`docs/datos/`](docs/datos/) los genera el cuaderno
 
 ## Datos
 
-Datos abiertos de [datos.gov.co](https://www.datos.gov.co), descargados por la API Socrata dentro del cuaderno:
+Datos abiertos de [datos.gov.co](https://www.datos.gov.co), descargados por la API Socrata dentro del cuaderno y guardados en parquet:
 
 | Conjunto | ID | Uso |
 |---|---|---|
-| [SECOP II - Contratos Electrónicos](https://www.datos.gov.co/Estad-sticas-Nacionales/SECOP-II-Contratos-Electr-nicos/jbjy-vk9h) | `jbjy-vk9h` | contrato, entidad, proveedor y valor final |
+| [SECOP II - Contratos Electrónicos](https://www.datos.gov.co/Estad-sticas-Nacionales/SECOP-II-Contratos-Electr-nicos/jbjy-vk9h) | `jbjy-vk9h` | contrato, entidad, proveedor y valor final (incluye adiciones) |
 | [SECOP II - Procesos de Contratación](https://www.datos.gov.co/Estad-sticas-Nacionales/SECOP-II-Procesos-de-Contrataci-n/p6dx-8zbt) | `p6dx-8zbt` | precio base, valor adjudicado, duración pactada y competencia |
-| SECOP II - Adiciones | `cb9c-h8sn` | fecha de las modificaciones (tope legal) y validación del objetivo |
+| [SECOP II - Adiciones](https://www.datos.gov.co/Gastos-Gubernamentales/SECOP-II-Adiciones/cb9c-h8sn) | `cb9c-h8sn` | fechas de las modificaciones: tope legal, validación del objetivo y filtro de contratos vigentes |
 
-- **Cruce:** `Contratos.proceso_de_compra` = `Procesos.id_del_portafolio` (última publicación de cada proceso).
-- **Período:** contratos firmados entre 2021 y 2024, en las modalidades que tienen valor adjudicado (competitivas y variantes «con ofertas»).
-- **Solo contratos terminados:** su fecha de fin pasó antes del 19-sep-2026 (fecha de descarga, 19-oct-2026, menos 30 días), para que la etiqueta no cambie después.
-- **Solo procesos con un único contrato:** con varios lotes, el valor adjudicado total no se puede repartir.
-- **Tope legal:** se descartan como errores de registro los contratos que crecen más que el tope del art. 40 de la Ley 80 (50 % del valor inicial en salarios mínimos, con el año de la última adición tomado del conjunto de adiciones).
+**Contratos usados** (descarga del 20-oct-2026):
 
-| Paso | Contratos |
+- **Para entrenar y evaluar:** contratos firmados entre 2021 y 2024 y ya terminados, para que la etiqueta no cambie después de la descarga.
+- **Para priorizar:** contratos firmados en 2025-2026 que siguen en ejecución y no tienen adiciones de valor.
+
+| Paso | Contratos 2021-2024 |
 |---|---:|
-| Descargados (2021-2024, modalidades con valor adjudicado) | 284.719 |
-| Un solo contrato por proceso y cruzan con su proceso, valores positivos | 251.805 |
-| Terminados | 249.600 |
-| Dentro del tope legal (**base del modelo**) | **245.294** |
+| Descargados (modalidades con valor adjudicado) | 284.715 |
+| Un contrato por proceso, cruzan con su proceso, valores positivos | 251.794 |
+| Valor adjudicado coherente con el precio base | 250.344 |
+| Terminados | 248.173 |
+| Dentro del tope legal (**base del modelo**, tasa de sobrecosto 25,5 %) | **244.518** |
 
-**Tasa de sobrecosto: 25,5 %**, estable entre años (23,9 % a 26,4 %).
+Contratos vigentes priorizados: **31.499** (firmados en 2025-2026, en ejecución y sin adiciones de valor).
 
-**Cobertura:** la contratación directa y el régimen especial sin ofertas no tienen valor adjudicado registrado y son el 90,5 % de los contratos del período. El modelo aplica al 9,5 % restante.
+**Limpieza:**
+
+- **Cruce:** `Contratos.proceso_de_compra` = `Procesos.id_del_portafolio`, con la última publicación de cada proceso.
+- **Un solo contrato por proceso:** con varios lotes, el valor adjudicado total no se puede repartir.
+- **Valor adjudicado coherente con el precio base:** entre 0,1 y 1,5 veces. Fuera de ese rango hay errores de digitación de varios órdenes de magnitud; en los datos aparecen compras menores «adjudicadas» por miles de billones de pesos. Afecta a cerca del 0,5 % de los registros.
+- **Tope legal de adiciones:** se descartan como errores los contratos que crecen más que el tope del art. 40 de la Ley 80 (50 % del valor inicial en salarios mínimos), con el año de la última adición tomado del conjunto de adiciones.
+
+### Por qué no se incluyen la contratación directa ni el régimen especial sin ofertas
+
+Son cerca del 90 % de los contratos del período, pero no se puede medir su sobrecosto:
+
+- **Cómo funcionan.** En la **contratación directa** (Ley 1150 de 2007) la entidad elige al contratista sin concurso, en causales fijadas por la ley; más del 90 % son prestación de servicios, en su mayoría con personas naturales. Las entidades de **régimen especial** (hospitales públicos, empresas de servicios públicos, universidades públicas, entre otras) contratan con sus propios manuales y no les aplica el tope de adiciones de la Ley 80.
+- **Falta el valor inicial.** Sin competencia no hay adjudicación: el valor adjudicado es 0 en estas modalidades. El precio base es el presupuesto estimado, no el valor firmado, y no está validado que coincidan. El conjunto de adiciones no trae montos. Sin valor inicial no hay etiqueta.
+- **Serían otro problema.** Sus adiciones son sobre todo prórrogas de contratos de servicios personales, un fenómeno distinto que pediría un modelo aparte.
 
 ## Variable objetivo
 
@@ -39,76 +53,83 @@ Datos abiertos de [datos.gov.co](https://www.datos.gov.co), descargados por la A
 sobrecosto = valor_del_contrato > valor_total_adjudicacion   (tolerancia de 0,1 %)
 ```
 
-En SECOP II, `valor_del_contrato` se actualiza con las adiciones. Validación con el conjunto de adiciones: el 99,7 % de los contratos con sobrecosto tiene un registro de modificación de valor o general, frente al 30 % de los que no lo tienen.
+En SECOP II, `valor_del_contrato` se actualiza con las adiciones. El conjunto de adiciones lo confirma: casi todos los contratos con sobrecosto tienen un registro de modificación de valor o general, frente a menos de un tercio de los que no lo tienen.
 
-## Exclusión de identificadores y fuga de información
+## Variables y fuga de información
 
-El modelo solo usa información disponible al adjudicar.
+El modelo solo usa información disponible al adjudicar: características de la entidad, del contrato y del proceso, categoría UNSPSC, precio base, valor adjudicado, duración pactada, competencia (oferentes) y tipo de proveedor.
 
-- **Identificadores excluidos:** IDs y referencias de contrato, proceso y adjudicación; URL; NIT y código de la entidad; documento, código y nombre del proveedor; datos de representantes, supervisores y ordenadores; BPIN; cuenta bancaria. El NIT de la entidad solo se usa para separar la validación cruzada.
-- **Fuga excluida (verificada en los datos):** `valor_del_contrato` (es el objetivo); fuentes de financiación (suman el valor final); fechas y duración del contrato (cambian con las prórrogas); `estado_contrato` y `dias_adicionados`; valores facturados, pagados y saldos; la cláusula `liquidaci_n`, que se actualiza después de firmar.
-- **Duración pactada:** se toma del proceso. Se verificó que no se actualiza con las prórrogas: coincide con la duración final en el 44 % de los contratos sin sobrecosto y solo en el 20 % de los que tienen sobrecosto.
-- **Texto libre** (objeto y descripción): no se usa, porque repite la categoría UNSPSC, identifica a la entidad con siglas propias y a veces se edita después de firmar.
-
-**Efecto de la fuga:** con las columnas con fuga, la PR-AUC sube de 0,551 a 0,839, y con el valor final a 0,987. Esas cifras no son válidas; el cuaderno las muestra para justificar la exclusión.
+- **Excluidos:** identificadores de contrato, proceso, entidad, proveedor y personas; columnas que se actualizan durante la ejecución (valor final, fuentes de financiación, fechas y duración del contrato, estado, días adicionados, pagos) y la cláusula de liquidación, que cambia después de firmar.
+- **Verificado:** la duración pactada del proceso no se actualiza con las prórrogas, y el valor `UNSPECIFIED` en la categoría UNSPSC, que crece desde 2023, es un cambio de registro y no un error.
+- **Texto libre** (objeto y descripción): no se usa, porque repite la categoría UNSPSC, identifica a la entidad y a veces se edita después de firmar.
+- **Efecto de la fuga** (anexo académico): con las columnas con fuga, la PR-AUC sube de 0,55 a 0,84, y con el valor final a 0,99. Esas cifras no son válidas.
 
 ## Metodología
 
-- **Partición temporal:** entrenamiento con contratos firmados en 2021-2023 (177.071 contratos, 2.547 entidades); prueba con 2024 (68.223 contratos, 2.322 entidades), usada una sola vez.
-- **Validación cruzada agrupada por entidad** (5 pliegues): elige hiperparámetros, iteraciones del boosting, épocas de la red y el umbral de cada modelo (F1 con predicciones fuera de pliegue).
-- **Modelos:** regresión logística, árbol de decisión (poda con regla de un error estándar), bosque aleatorio, Gradient Boosting y red neuronal (perceptrón multicapa).
+- **Partición temporal:** entrenamiento con contratos firmados en 2021-2023; prueba con los de 2024, usada una sola vez. Una segunda ventana (2021-2022 → 2023) sirve como robustez.
+- **Validación cruzada agrupada por entidad** (5 pliegues): elige hiperparámetros, iteraciones, épocas y el umbral de cada modelo con predicciones fuera de pliegue.
+- **Modelos:** regresión logística, árbol de decisión, bosque aleatorio, Gradient Boosting y red neuronal.
 - **Selección automática del campeón**, con una regla fijada antes de mirar la prueba: mejor PR-AUC en validación; elegibles los modelos a menos de un error estándar pareado del mejor; entre ellos, el más interpretable; la prueba solo confirma.
-- **Incertidumbre:** bootstrap por entidad (500 remuestreos) sobre la prueba.
+- **Incertidumbre:** bootstrap por entidad sobre la prueba.
+- **Modelo final:** el campeón se reentrena con todos los contratos con etiqueta (2021-2024) y ordena los contratos vigentes.
 
 ## Resultados (prueba: contratos firmados en 2024)
 
-| Modelo | PR-AUC validación | ROC-AUC | PR-AUC | Precisión en el 10 % más riesgoso | F1 |
-|---|---:|---:|---:|---:|---:|
-| Línea base (tasa promedio) | 0,255 | 0,500 | 0,255 | 0,261 | 0,000 |
-| Regresión logística | 0,501 | 0,742 | 0,487 | 0,584 | 0,520 |
-| Árbol de decisión | 0,471 | 0,724 | 0,466 | 0,569 | 0,499 |
-| Bosque aleatorio | 0,536 | 0,779 | 0,548 | 0,656 | 0,552 |
-| **Gradient Boosting (campeón)** | **0,550** | **0,783** | **0,551** | **0,657** | **0,553** |
-| Red neuronal | 0,529 | 0,763 | 0,535 | 0,645 | 0,533 |
+| Modelo | PR-AUC validación | ROC-AUC | PR-AUC | Precisión en el 10 % más riesgoso |
+|---|---:|---:|---:|---:|
+| Línea base (tasa promedio) | 0,255 | 0,500 | 0,255 | 0,261 |
+| Regresión logística | 0,504 | 0,745 | 0,490 | 0,586 |
+| Árbol de decisión | 0,475 | 0,726 | 0,469 | 0,571 |
+| Bosque aleatorio | 0,537 | 0,779 | 0,548 | 0,656 |
+| **Gradient Boosting (campeón)** | **0,551** | **0,783** | **0,551** | **0,648** |
+| Red neuronal | 0,536 | 0,769 | 0,533 | 0,641 |
 
-- **Campeón: Gradient Boosting.** PR-AUC en prueba 0,550 [IC 95 %: 0,530-0,575], igual a la de validación (0,550).
-- **En el 10 % de contratos con mayor puntaje, el 66 % tuvo sobrecosto**, frente al 25 % general.
-- Con su umbral: precisión 46 %, exhaustividad 69 %; marca al 38 % de los contratos.
-- El bosque aleatorio no se distingue del campeón en la prueba (Δ PR-AUC −0,004 [−0,012; +0,010]). La logística (−0,064), el árbol (−0,086) y la red (−0,017) quedan por debajo.
-- **Variables más importantes:** familia UNSPSC (el tipo de bien o servicio), precio base, duración pactada, departamento y sector.
-
-**Robustez:**
-
-| Variante | PR-AUC del campeón |
-|---|---:|
-| Principal: objetivo legal, 2021-2023 → 2024 | 0,551 |
-| Objetivo con corte nominal de 1,5x | 0,544 |
-| Segunda ventana: 2021-2022 → 2023 | 0,566 |
-
-Las cinco variables principales coinciden en las tres variantes. El desempeño se mantiene dentro de cada modalidad (ROC-AUC entre 0,64 y 0,79). Pasar del 75 % al 100 % del entrenamiento sube la PR-AUC en 0,009.
+- **Campeón: Gradient Boosting**, PR-AUC en prueba 0,551 [IC 95 %: 0,529-0,575]. El bosque aleatorio no se distingue de él; los demás quedan por debajo.
+- **Valor de priorizar (2024):** revisando el 10 % de contratos con mayor probabilidad, el 65 % tuvo sobrecosto (2,5 veces la tasa general del 25 %) y se encuentra el 25 % de todos los sobrecostos, frente al 18 % si se revisan primero los contratos de mayor valor.
+- **En pesos de sobrecosto**, revisar primero los contratos más grandes captura más monto, porque las adiciones se concentran en pocos contratos grandes. Los dos criterios se complementan.
+- **Qué impulsa el riesgo:** familia UNSPSC (el tipo de bien o servicio), precio base, duración pactada, departamento y sector.
+- **Robustez:** el resultado se mantiene con el corte nominal del objetivo (PR-AUC 0,544), en la segunda ventana temporal (0,568) y dentro de cada modalidad.
+- **Magnitud:** las adiciones de valor suman 19,7 billones de pesos en 2021-2024 (16-20 % de lo adjudicado cada año); el 10 % de los sobrecostos de mayor monto concentra el 82 % de los pesos.
 
 ## Cómo ejecutarlo
 
-En Colab basta con abrir el cuaderno y ejecutar todo (*Entorno de ejecución → Ejecutar todas*). En local:
+En local (Windows, PowerShell):
 
-```bash
-pip install -r requirements.txt
-jupyter notebook notebooks/sobrecosto_secop.ipynb
+```powershell
+py -m pip install -r requirements.txt
+code notebooks/sobrecosto_secop.ipynb
 ```
 
-La descarga trae unos 285.000 contratos y 510.000 filas de procesos; la ejecución completa toma varios minutos (la descarga, la red neuronal y la sección de robustez son lo más lento).
+En la sección 1 del cuaderno se elige qué hacer:
 
-Parámetros principales (sección 1): `ANIOS_ENTRENAMIENTO`, `ANIO_PRUEBA`, `FECHA_DESCARGA`, `MARGEN_DIAS`, `CORTE_PRINCIPAL`, `BETA` y `CAPACIDAD`.
+| `DESCARGAR_DATOS` | `ENTRENAR_MODELOS` | Qué hace |
+|---|---|---|
+| `True` | `True` | descarga todo de la API, lo guarda en `data/<fecha>/`, entrena y guarda una corrida en `corridas/<fecha_hora>/` |
+| `False` | `True` | reentrena con los datos guardados, sin descargar |
+| `False` | `False` | carga la última corrida y sus datos: solo muestra resultados (uno o dos minutos) |
 
-**Reproducibilidad:** `FECHA_DESCARGA` está fija en la fecha de la corrida reportada. La API publica la versión vigente de los datos, así que una descarga posterior puede traer algunos registros distintos. Para actualizar con datos nuevos, usar `pd.Timestamp.today().normalize()`.
+Con `EXPORTAR_WEB = True`, la sección 16 escribe en `docs/datos/` los archivos de la página web, incluido el ranking completo de contratos vigentes en CSV.
+
+En Colab hay que montar Google Drive y apuntar `RAIZ` a la carpeta del proyecto (instrucciones en la sección 1); lo que se guarde fuera de Drive se borra al cerrar la sesión.
+
+## Estructura del repositorio
+
+```
+notebooks/sobrecosto_secop.ipynb   análisis, modelos, priorización y exportación
+docs/                              página web (GitHub Pages): index.html, app.js, estilos.css
+docs/datos/                        resultados que lee la página (JSON y CSV), generados por el cuaderno
+data/                              datos descargados en parquet (no se versiona)
+corridas/                          modelos y resultados de cada corrida (no se versiona)
+```
 
 ## Limitaciones
 
-- **Cobertura:** no aplica a la contratación directa ni al régimen especial sin ofertas (90,5 % de los contratos).
-- **Contratos terminados:** los que siguen vigentes, a menudo por prórrogas, quedan fuera (1,5 % en 2024).
+- **Cobertura:** no aplica a la contratación directa ni al régimen especial sin ofertas.
+- **Contratos terminados:** los que siguen vigentes, a menudo por prórrogas, quedan fuera del entrenamiento.
 - **Procesos con varios contratos** quedan fuera.
 - **Validación parcial del objetivo:** el conjunto de adiciones no trae montos.
-- **Prácticas de registro que cambian:** la cláusula de liquidación y la categoría UNSPSC sin código (`UNSPECIFIED` pasa de menos del 1 % en 2021-2022 a cerca del 10 % en 2024). Conviene reevaluar el modelo cada año.
+- **Prácticas de registro que cambian:** la cláusula de liquidación y la categoría UNSPSC sin código. Conviene reevaluar el modelo cada año.
+- **Contratos vigentes:** son más recientes y más largos que los de entrenamiento, y su registro puede tener rezagos. El ranking se lee como orden de prioridad, no como probabilidad exacta.
 - **Importancia no es causalidad.**
 
-**Trabajo futuro:** usar el campeón para priorizar contratos vigentes que aún no tienen adiciones, incorporar el historial de la entidad y del proveedor (solo con contratos anteriores), evaluar el texto libre controlando que no identifique a la entidad y reevaluar a medida que terminen los contratos de 2025 y 2026.
+**Trabajo futuro:** incorporar el historial de la entidad y del proveedor (solo con contratos anteriores), evaluar el texto libre controlando que no identifique a la entidad, validar el precio base como valor inicial en la contratación directa y, como propuesta de operación, monitorear el modelo: reentrenarlo cada año y comparar el ranking con lo que ocurra cuando esos contratos terminen.

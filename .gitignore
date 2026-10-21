@@ -224,3 +224,9 @@ data/
 datos/
 *.csv
 *.parquet
+
+# Corridas del cuaderno (modelos y resultados intermedios): se regeneran con ENTRENAR_MODELOS = True
+corridas/
+# La página web sí publica sus archivos de datos (incluido el CSV del ranking)
+!docs/datos/
+!docs/datos/*.csv
