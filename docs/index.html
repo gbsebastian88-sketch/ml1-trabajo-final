@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Riesgo de sobrecosto en contratos públicos</title>
+<meta name="description" content="Priorización de contratos públicos con riesgo de sobrecosto a partir de SECOP II. Trabajo final de Machine Learning I, Universidad EAN.">
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<header class="encabezado">
+  <div class="contenedor encabezado-fila">
+    <div>
+      <p class="sobretitulo">SECOP II · Machine Learning I · Universidad EAN</p>
+      <h1>Riesgo de sobrecosto en contratos públicos</h1>
+      <p class="subtitulo">Qué tan frecuente es que un contrato termine costando más de lo adjudicado y cuáles de los contratos vigentes conviene revisar primero.</p>
+    </div>
+    <p class="meta" id="meta-corrida">Cargando datos…</p>
+  </div>
+  <nav class="pestanas" aria-label="Módulos">
+    <div class="contenedor pestanas-fila" role="tablist">
+      <button role="tab" data-tab="resumen" aria-selected="true">1 · Resumen</button>
+      <button role="tab" data-tab="problema">2 · El problema</button>
+      <button role="tab" data-tab="datos">3 · Datos y alcance</button>
+      <button role="tab" data-tab="modelos">4 · Modelos</button>
+      <button role="tab" data-tab="valor">5 · Valor de priorizar</button>
+      <button role="tab" data-tab="riesgo">6 · Qué impulsa el riesgo</button>
+      <button role="tab" data-tab="priorizacion">7 · Priorización</button>
+      <button role="tab" data-tab="limites">8 · Limitaciones</button>
+    </div>
+  </nav>
+</header>
+
+<main class="contenedor">
+  <div id="error" class="aviso aviso-error" hidden></div>
+
+  <!-- 1 · Resumen -->
+  <section class="panel" id="tab-resumen" role="tabpanel">
+    <h2 class="mensaje" id="resumen-mensaje"></h2>
+    <div class="tarjetas" id="resumen-kpis"></div>
+    <div class="dos-columnas">
+      <div class="bloque">
+        <h3>La pregunta</h3>
+        <p>En el momento de <strong>adjudicar</strong> un proceso de contratación, ¿se puede anticipar si el contrato terminará costando más de lo adjudicado? Un sobrecosto es una <strong>adición de valor</strong>: el valor final del contrato supera el valor adjudicado.</p>
+        <p>El modelo estima la <strong>probabilidad</strong> de que ocurra un sobrecosto, no su monto. Con esa probabilidad se ordenan los contratos vigentes para revisar primero los de mayor riesgo.</p>
+      </div>
+      <div class="bloque">
+        <h3>Recorrido de la presentación</h3>
+        <ol class="recorrido" id="resumen-recorrido"></ol>
+      </div>
+    </div>
+    <p class="nota" id="resumen-alcance"></p>
+  </section>
+
+  <!-- 2 · El problema -->
+  <section class="panel" id="tab-problema" role="tabpanel" hidden>
+    <h2 class="mensaje" id="problema-mensaje"></h2>
+    <div class="tarjetas" id="problema-kpis"></div>
+    <div class="dos-columnas">
+      <figure class="grafico"><figcaption>Adiciones de valor por año de firma <span>miles de millones de pesos corrientes</span></figcaption><div class="lienzo"><canvas id="g-adiciones"></canvas></div></figure>
+      <figure class="grafico"><figcaption>Contratos con sobrecosto <span>% de los contratos firmados cada año</span></figcaption><div class="lienzo"><canvas id="g-tasa"></canvas></div></figure>
+    </div>
+    <details class="tabla-detalle"><summary>Ver la tabla por año</summary><div id="t-magnitud"></div></details>
+    <p class="nota" id="problema-nota"></p>
+  </section>
+
+  <!-- 3 · Datos y alcance -->
+  <section class="panel" id="tab-datos" role="tabpanel" hidden>
+    <h2 class="mensaje" id="datos-mensaje"></h2>
+    <div class="dos-columnas">
+      <figure class="grafico"><figcaption>De la descarga a la base del modelo <span>contratos firmados 2021-2024</span></figcaption><div class="lienzo"><canvas id="g-embudo"></canvas></div></figure>
+      <figure class="grafico"><figcaption>Contratos del período por modalidad <span>% del total 2021-2024</span></figcaption><div class="lienzo alto"><canvas id="g-modalidades"></canvas></div></figure>
+    </div>
+    <div class="dos-columnas">
+      <div class="bloque">
+        <h3>Por qué no se incluyen la contratación directa ni el régimen especial sin ofertas</h3>
+        <ul>
+          <li><strong>Cómo funcionan.</strong> En la contratación directa la entidad elige al contratista sin concurso, en causales fijadas por la ley (más del 90 % son prestación de servicios). El régimen especial agrupa entidades que contratan con sus propios manuales, como hospitales públicos y empresas de servicios públicos.</li>
+          <li><strong>Falta el valor inicial.</strong> Sin competencia no hay adjudicación: el valor adjudicado es 0. El precio base es un presupuesto estimado, no el valor firmado, y el registro de adiciones no trae montos. Sin valor inicial no se puede medir el sobrecosto.</li>
+          <li><strong>Serían otro problema.</strong> Sus adiciones son sobre todo prórrogas de contratos de servicios personales, un fenómeno distinto que pediría un modelo aparte.</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>Limpieza y controles de calidad</h3>
+        <ul id="datos-controles"></ul>
+        <figure class="grafico compacto"><figcaption>Contratos sin categoría UNSPSC («UNSPECIFIED») <span>% por año de firma</span></figcaption><div class="lienzo bajo"><canvas id="g-unspsc"></canvas></div></figure>
+      </div>
+    </div>
+    <p class="nota">Fuentes: SECOP II - Contratos Electrónicos (jbjy-vk9h), Procesos de Contratación (p6dx-8zbt) y Adiciones (cb9c-h8sn), datos abiertos de datos.gov.co.</p>
+  </section>
+
+  <!-- 4 · Modelos -->
+  <section class="panel" id="tab-modelos" role="tabpanel" hidden>
+    <h2 class="mensaje" id="modelos-mensaje"></h2>
+    <div class="dos-columnas">
+      <figure class="grafico"><figcaption>Calidad del ordenamiento en 2024 (PR-AUC) <span>punto: estimación · barra: intervalo de 95 % · línea gris: azar</span></figcaption><div class="lienzo"><canvas id="g-prauc"></canvas></div></figure>
+      <div class="bloque">
+        <h3>Cómo se eligió el campeón</h3>
+        <ol class="pasos">
+          <li>Se entrenó con contratos de 2021-2023 y se evaluó con los de 2024, que el modelo no vio.</li>
+          <li>Todas las decisiones se tomaron con validación cruzada <strong>por entidad</strong>: el modelo siempre se evalúa con entidades que no vio.</li>
+          <li>Regla fijada de antemano: el mejor en validación; si otro modelo más simple queda a menos de un error estándar, se prefiere el más interpretable.</li>
+          <li>La prueba de 2024 solo confirma la elección.</li>
+        </ol>
+        <p id="modelos-campeon" class="destacado"></p>
+      </div>
+    </div>
+    <h3 class="subtitulo-seccion">Comparación de modelos</h3>
+    <div id="t-modelos"></div>
+    <div class="dos-columnas">
+      <figure class="grafico"><figcaption>¿Las probabilidades son creíbles? (calibración en 2024) <span>frecuencia observada frente a probabilidad predicha</span></figcaption><div class="lienzo"><canvas id="g-calibracion"></canvas></div></figure>
+      <div class="bloque">
+        <h3>Estabilidad</h3>
+        <div id="t-robustez"></div>
+        <details class="tabla-detalle"><summary>Desempeño del campeón por modalidad</summary><div id="t-modalidad"></div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Valor de priorizar -->
+  <section class="panel" id="tab-valor" role="tabpanel" hidden>
+    <h2 class="mensaje" id="valor-mensaje"></h2>
+    <div class="tarjetas" id="valor-kpis"></div>
+    <div class="dos-columnas">
+      <figure class="grafico"><figcaption>Sobrecostos encontrados según cuántos contratos se revisan <span>contratos de 2024 ordenados de mayor a menor prioridad</span></figcaption><div class="lienzo"><canvas id="g-ganancia-conteo"></canvas></div></figure>
+      <figure class="grafico"><figcaption>Pesos de sobrecosto encontrados según cuántos contratos se revisan <span>mismo orden, ponderado por el monto de la adición</span></figcaption><div class="lienzo"><canvas id="g-ganancia-pesos"></canvas></div></figure>
+    </div>
+    <div id="t-ganancia"></div>
+    <p class="nota" id="valor-nota"></p>
+  </section>
+
+  <!-- 6 · Qué impulsa el riesgo -->
+  <section class="panel" id="tab-riesgo" role="tabpanel" hidden>
+    <h2 class="mensaje" id="riesgo-mensaje"></h2>
+    <div class="dos-columnas">
+      <figure class="grafico"><figcaption>Variables de las que más depende el modelo <span>caída de la PR-AUC al desordenar cada variable</span></figcaption><div class="lienzo alto"><canvas id="g-importancia"></canvas></div></figure>
+      <div class="bloque">
+        <h3>Cómo leer esta sección</h3>
+        <p>La importancia dice <strong>cuánto</strong> depende el modelo de cada variable. Las curvas de abajo muestran <strong>en qué dirección</strong>: cómo cambia la probabilidad media de sobrecosto cuando se fija una variable en distintos valores, dejando lo demás igual.</p>
+        <p>Describen asociaciones que el modelo aprendió, <strong>no causas</strong>.</p>
+      </div>
+    </div>
+    <div class="tres-columnas" id="riesgo-dependencias"></div>
+  </section>
+
+  <!-- 7 · Priorización -->
+  <section class="panel" id="tab-priorizacion" role="tabpanel" hidden>
+    <h2 class="mensaje" id="prio-mensaje"></h2>
+    <div class="tarjetas" id="prio-kpis"></div>
+    <div class="filtros" role="group" aria-label="Filtros del ranking">
+      <label>Revisar los primeros
+        <select id="f-n"></select>
+      </label>
+      <label>Departamento <select id="f-departamento"><option value="">Todos</option></select></label>
+      <label>Modalidad <select id="f-modalidad"><option value="">Todas</option></select></label>
+      <label>Sector <select id="f-sector"><option value="">Todos</option></select></label>
+      <label>Tipo de contrato <select id="f-tipo"><option value="">Todos</option></select></label>
+      <label class="buscar">Entidad u objeto <input id="f-texto" type="search" placeholder="Buscar…"></label>
+    </div>
+    <div class="barra-acciones">
+      <p id="prio-conteo" aria-live="polite"></p>
+      <div>
+        <button id="b-descargar" class="boton">Descargar selección (CSV)</button>
+        <a id="b-completo" class="boton secundario" href="datos/ranking_vigentes.csv" download>Ranking completo (CSV)</a>
+      </div>
+    </div>
+    <div class="tabla-desplazable"><table class="tabla ranking" id="t-ranking"></table></div>
+    <div class="paginacion" id="paginacion"></div>
+    <div class="dos-columnas">
+      <figure class="grafico"><figcaption>Modalidades sobrerrepresentadas en la prioridad alta <span>veces su peso frente a todos los vigentes</span></figcaption><div class="lienzo"><canvas id="g-reparto-modalidad"></canvas></div></figure>
+      <figure class="grafico"><figcaption>Departamentos con más contratos en prioridad alta <span>% de la prioridad alta</span></figcaption><div class="lienzo"><canvas id="g-reparto-departamento"></canvas></div></figure>
+    </div>
+    <p class="nota">El ranking es un <strong>orden de prioridad</strong>, no una probabilidad exacta: los contratos vigentes son más recientes y, en promedio, más largos que los de entrenamiento. La entidad, el objeto y el enlace se muestran solo para identificar el contrato; no son variables del modelo.</p>
+  </section>
+
+  <!-- 8 · Limitaciones -->
+  <section class="panel" id="tab-limites" role="tabpanel" hidden>
+    <h2 class="mensaje">Qué no hace el modelo y cómo seguir</h2>
+    <div class="dos-columnas">
+      <div class="bloque">
+        <h3>Limitaciones</h3>
+        <ul class="lista-espaciada">
+          <li><strong>Cobertura.</strong> Aplica solo a las modalidades con valor adjudicado (<span id="lim-cobertura"></span> de los contratos del período); no a la contratación directa ni al régimen especial sin ofertas.</li>
+          <li><strong>Estima si ocurre, no cuánto.</strong> El monto de la adición no se predice; el valor adjudicado se muestra para que el usuario lo considere.</li>
+          <li><strong>Contratos terminados.</strong> El entrenamiento usa contratos ya terminados; los que siguen vigentes por prórrogas quedan fuera.</li>
+          <li><strong>Un contrato por proceso.</strong> Los procesos con varios lotes quedan fuera.</li>
+          <li><strong>Calidad del registro.</strong> Se corrigen errores de digitación del valor adjudicado y del tope legal, pero el registro de adiciones no trae montos y algunas prácticas de registro cambian entre años (liquidación, categoría UNSPSC).</li>
+          <li><strong>Asociación, no causa.</strong> Las variables importantes señalan patrones, no explican por qué ocurre un sobrecosto.</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>Próximos pasos</h3>
+        <ul class="lista-espaciada">
+          <li><strong>Historial de la entidad y del proveedor</strong>, calculado solo con contratos anteriores a cada firma.</li>
+          <li><strong>Texto del objeto del contrato</strong>, controlando que no funcione como identificador de la entidad.</li>
+          <li><strong>Contratación directa:</strong> validar si el precio base sirve como valor inicial, para extender la cobertura.</li>
+          <li><strong>Propuesta de operación: monitoreo.</strong> Reentrenar cada año, vigilar los cambios en el registro de los datos y comparar el ranking 2025-2026 con lo que ocurra cuando esos contratos terminen.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="contenedor">
+    <p id="pie-texto">Trabajo final de Machine Learning I · Universidad EAN. Datos abiertos de SECOP II (datos.gov.co). Resultados generados por el cuaderno <code>notebooks/sobrecosto_secop.ipynb</code>.</p>
+  </div>
+</footer>
+
+<script src="vendor/chart.umd.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
