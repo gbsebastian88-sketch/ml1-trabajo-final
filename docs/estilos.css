@@ -184,3 +184,6 @@ main.contenedor { padding-top: 30px; padding-bottom: 40px; }
   .mensaje { font-size: 18px; }
   .tarjeta .valor { font-size: 26px; }
 }
+
+.bloque-conclusiones { margin-bottom: 18px; }
+#resumen-recorrido { counter-reset: paso 1; }

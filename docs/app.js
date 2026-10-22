@@ -105,42 +105,29 @@
   }
 
   // ---------------- 1 · Resumen ----------------
-  function resumen() {
-    const R = D.resumen, M = D.magnitud, m = R.metricas_campeon;
-    const g10 = D.ganancia.tabla.find((f) => f.revisar === "10%" && f.criterio.startsWith("campeón"));
-    $("#resumen-mensaje").textContent =
-      `Uno de cada ${Math.round(1 / R.tasa_sobrecosto)} contratos termina costando más de lo adjudicado. Revisando primero el ${pct(m.capacidad, 0)} que señala el modelo, ${nf0.format(g10["precisión"] * 100)} de cada 100 tienen sobrecosto.`;
-    tarjetas($("#resumen-kpis"), [
-      { v: nf1.format(M.total_adiciones / 1e12) + " billones", e: `en adiciones de valor ${R.anios_entrenamiento[0]}-${R.anio_prueba}`, d: "pesos corrientes, modalidades con valor adjudicado" },
-      { v: pct(R.tasa_sobrecosto), e: "de los contratos terminados tuvo sobrecosto", d: `${num(R.embudo[Object.keys(R.embudo).pop()])} contratos analizados` },
-      { v: pct(g10["precisión"], 0), e: `de acierto revisando el ${pct(m.capacidad, 0)} más riesgoso`, d: `frente a ${pct(m.tasa_prueba, 0)} al azar (prueba ${R.anio_prueba})` },
-      { v: num(R.n_vigentes), e: `contratos vigentes ${R.anios_priorizar.join("-")} priorizados`, d: `${num(R.n_prioridad_alta)} en prioridad alta` },
-    ]);
-    const pasos = [
-      ["problema", "El problema", "cuánto pesan los sobrecostos"],
-      ["datos", "Datos y alcance", "de dónde salen los datos y qué cubre el modelo"],
-      ["modelos", "Modelos", "cinco modelos comparados y cómo se eligió el campeón"],
-      ["valor", "Valor de priorizar", "qué se habría encontrado en 2024"],
-      ["riesgo", "Qué impulsa el riesgo", "las variables que más pesan"],
-      ["priorizacion", "Priorización 2025-2026", "el ranking de contratos vigentes"],
-      ["limites", "Limitaciones y próximos pasos", "qué no hace el modelo"],
-    ];
-    $("#resumen-recorrido").innerHTML = pasos.map(([t, n, d]) => `<li><span><a href="#${t}">${n}</a> · ${d}</span></li>`).join("");
-    $("#resumen-alcance").innerHTML = `Modelo campeón: <strong>${esc(R.campeon)}</strong>, elegido automáticamente entre cinco modelos. Alcance: modalidades con valor adjudicado (${pct(R.cobertura)} de los contratos del período). Datos descargados el ${esc(R.fecha_descarga)}.`;
-  }
-
-  // ---------------- 2 · El problema ----------------
+  // ---------------- 1 · El problema ----------------
   function problema() {
     const M = D.magnitud, filas = M.por_anio;
     const total = filas.reduce((a, f) => a + f["adiciones (miles de millones)"], 0);
     const adj = filas.reduce((a, f) => a + f["valor adjudicado (miles de millones)"], 0);
-    $("#problema-mensaje").textContent = `Las adiciones suman cerca de ${nf1.format(total / 1000)} billones de pesos en cuatro años: alrededor del ${pct(total / adj, 0)} de lo adjudicado, concentrado en pocos contratos grandes.`;
+    const R = D.resumen;
+    const conSobre = filas.reduce((a, f) => a + f.con_sobrecosto, 0), contratos = filas.reduce((a, f) => a + f.contratos, 0);
+    $("#problema-mensaje").textContent = `Uno de cada ${Math.round(contratos / conSobre)} contratos públicos termina costando más de lo adjudicado: entre ${filas[0].anio_firma} y ${filas[filas.length - 1].anio_firma}, las adiciones sumaron ${nf1.format(total / 1000)} billones de pesos.`;
     tarjetas($("#problema-kpis"), [
-      { v: nf1.format(total / 1000) + " billones", e: "en adiciones de valor", d: `${filas[0].anio_firma}-${filas[filas.length - 1].anio_firma}` },
-      { v: pct(M.crecimiento_mediano, 0), e: "crecimiento mediano de un contrato con sobrecosto", d: "sobre su valor adjudicado" },
-      { v: pct(M.concentracion["1%"], 0), e: "de los pesos se concentra en el 1 % de los sobrecostos", d: "los de mayor monto" },
-      { v: pct(M.concentracion["10%"], 0), e: "de los pesos se concentra en el 10 % de los sobrecostos", d: "los de mayor monto" },
+      { v: pct(conSobre / contratos), e: "de los contratos terminados tuvo sobrecosto", d: `${num(conSobre)} de ${num(contratos)} contratos` },
+      { v: nf1.format(total / 1000) + " billones", e: "en adiciones de valor", d: `${pct(total / adj, 0)} de lo adjudicado en esos contratos` },
+      { v: pct(M.crecimiento_mediano, 0), e: "crece el valor de un contrato con sobrecosto", d: "mediana, sobre su valor adjudicado" },
+      { v: pct(M.concentracion["10%"], 0), e: "del monto adicionado está en el 10 % de los sobrecostos más grandes", d: `el 1 % más grande concentra el ${pct(M.concentracion["1%"], 0)}` },
     ]);
+    const pasos = [
+      ["datos", "Datos y alcance", "de dónde salen los datos y qué contratos cubre el modelo"],
+      ["modelos", "Modelos", "cinco modelos comparados y cómo se eligió el campeón"],
+      ["valor", "Valor de priorizar", "qué se habría encontrado en 2024 revisando lo que señala el modelo"],
+      ["riesgo", "Qué impulsa el riesgo", "las variables que más pesan"],
+      ["priorizacion", "Priorización 2025-2026", "el ranking de contratos vigentes"],
+      ["limites", "Conclusiones", "resultados, limitaciones y próximos pasos"],
+    ];
+    $("#resumen-recorrido").innerHTML = pasos.map(([t, n, d], k) => `<li><span><a href="#${t}">${n}</a> · ${d}</span></li>`).join("");
     const anios = filas.map((f) => String(f.anio_firma));
     grafico("g-adiciones", {
       type: "bar",
@@ -163,10 +150,10 @@
       { t: "Adiciones (miles de millones)", num: 1, f: (f) => num(f["adiciones (miles de millones)"]) },
       { t: "Adiciones / adjudicado", num: 1, f: (f) => pct(f["adiciones / valor adjudicado"]) },
     ], filas);
-    $("#problema-nota").textContent = "Pesos corrientes de cada año. El modelo estima si ocurre un sobrecosto, no su monto: la magnitud sirve para dimensionar el problema y para medir, en el módulo 5, cuánto del monto se cubriría al priorizar.";
+    $("#problema-nota").textContent = `Contratos de modalidades con valor adjudicado (${pct(R.cobertura)} de los contratos del período), firmados entre ${filas[0].anio_firma} y ${filas[filas.length - 1].anio_firma} y ya terminados. Pesos corrientes de cada año. Datos de SECOP II descargados el ${R.fecha_descarga}.`;
   }
 
-  // ---------------- 3 · Datos y alcance ----------------
+  // ---------------- 2 · Datos y alcance ----------------
   function datos() {
     const R = D.resumen, A = D.alcance;
     const pasos = Object.entries(R.embudo);
@@ -208,7 +195,7 @@
     });
   }
 
-  // ---------------- 4 · Modelos ----------------
+  // ---------------- 3 · Modelos ----------------
   function modelos() {
     const C = D.comparacion, R = D.resumen, camp = C.campeon;
     const ic = C.ic.filter((f) => f.modelo !== "Línea base").sort((a, b) => b.pr_auc - a.pr_auc);
@@ -270,18 +257,21 @@
     ], C.por_modalidad);
   }
 
-  // ---------------- 5 · Valor de priorizar ----------------
+  // ---------------- 4 · Valor de priorizar ----------------
   function valor() {
     const G = D.ganancia;
     const nombres = Object.keys(G.curvas);
     const camp = nombres.find((n) => n.startsWith("campeón"));
     const fila = (rev, crit) => G.tabla.find((f) => f.revisar === rev && f.criterio === crit);
     const c10 = fila("10%", camp), v10 = fila("10%", "mayor valor adjudicado");
+    const pesosAnio = (D.magnitud.por_anio.find((f) => f.anio_firma === G.anio) || {})["adiciones (miles de millones)"];
     $("#valor-mensaje").textContent = `Revisando el 10 % de contratos que señala el modelo se habrían encontrado ${pct(c10["% de los sobrecostos"], 0)} de los sobrecostos de ${G.anio}, con ${pct(c10["precisión"], 0)} de acierto: ${nf1.format(c10["veces el azar"])} veces lo que da revisar al azar.`;
     tarjetas($("#valor-kpis"), [
       { v: pct(c10["precisión"], 0), e: "de acierto en el 10 % que señala el modelo", d: `al azar: ${pct(G.tasa, 0)} · mayores contratos: ${pct(v10["precisión"], 0)}` },
       { v: num(c10["sobrecostos encontrados"]), e: `sobrecostos encontrados revisando ${num(c10["contratos revisados"])} contratos`, d: `${pct(c10["% de los sobrecostos"], 0)} del total (mayores contratos: ${pct(v10["% de los sobrecostos"], 0)})` },
-      { v: pct(c10["% de los pesos de sobrecosto"], 0), e: "de los pesos de sobrecosto en ese mismo 10 %", d: `revisando los mayores contratos: ${pct(v10["% de los pesos de sobrecosto"], 0)}` },
+      { v: pct(c10["% de los pesos de sobrecosto"], 0), e: `del monto adicionado en ${G.anio} estaba en ese mismo 10 % de contratos`,
+        d: pesosAnio ? `${nf0.format(pesosAnio * c10["% de los pesos de sobrecosto"])} de ${nf0.format(pesosAnio)} miles de millones · revisando los más grandes: ${pct(v10["% de los pesos de sobrecosto"], 0)}`
+                     : `revisando los más grandes: ${pct(v10["% de los pesos de sobrecosto"], 0)}` },
     ]);
     const estilo = (n, i) => {
       if (n.startsWith("campeón")) return { borderColor: css("--serie-1"), borderWidth: 3, borderDash: [] };
@@ -299,7 +289,7 @@
         options: { parsing: false, interaction: { mode: "nearest", axis: "x", intersect: false },
           plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { title: (it) => `Revisando el ${pct(it[0].parsed.x, 0)} de los contratos`, label: (c) => `${c.dataset.label}: ${pct(c.parsed.y, 0)}` } } },
           scales: { x: { type: "linear", min: 0, max: 1, title: { display: true, text: "contratos revisados" }, ticks: { callback: (v) => nf0.format(v * 100) + " %" } },
-            y: { min: 0, max: 1, title: { display: true, text: clave === "conteo" ? "sobrecostos encontrados" : "pesos de sobrecosto encontrados" }, ticks: { callback: (v) => nf0.format(v * 100) + " %" } } } },
+            y: { min: 0, max: 1, title: { display: true, text: clave === "conteo" ? "sobrecostos encontrados" : "monto adicionado encontrado" }, ticks: { callback: (v) => nf0.format(v * 100) + " %" } } } },
         plugins: [{ id: "marca-10", afterDraw(ch) { const x = ch.scales.x.getPixelForValue(0.1); const { top, bottom } = ch.chartArea; const ctx = ch.ctx;
           ctx.save(); ctx.strokeStyle = css("--texto-3"); ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke(); ctx.restore(); } }],
       });
@@ -311,13 +301,13 @@
       { t: "Sobrecostos encontrados", num: 1, f: (f) => num(f["sobrecostos encontrados"]) },
       { t: "Acierto", num: 1, f: (f) => pct(f["precisión"]) },
       { t: "% de los sobrecostos", num: 1, f: (f) => pct(f["% de los sobrecostos"]) },
-      { t: "% de los pesos", num: 1, f: (f) => pct(f["% de los pesos de sobrecosto"]) },
+      { t: "% del monto adicionado", num: 1, f: (f) => pct(f["% de los pesos de sobrecosto"]) },
       { t: "Veces el azar", num: 1, f: (f) => nf1.format(f["veces el azar"]) },
     ], filas, { resaltar: (f) => f.criterio === camp && f.revisar === "10%" });
-    $("#valor-nota").textContent = `Evaluación retrospectiva con los contratos firmados en ${G.anio}, que el modelo no vio al entrenar. En número de sobrecostos el modelo supera con claridad a revisar los contratos más grandes; en pesos, los contratos más grandes concentran más monto, porque el modelo estima si ocurre un sobrecosto y no su tamaño. Los dos criterios se complementan.`;
+    $("#valor-nota").textContent = `Evaluación retrospectiva con los contratos firmados en ${G.anio}, que el modelo no vio al entrenar. En número de sobrecostos el modelo supera con claridad a revisar los contratos más grandes; en monto, revisar los contratos más grandes cubre más pesos, porque las adiciones grandes ocurren en contratos grandes y el modelo estima si ocurre un sobrecosto, no su tamaño. Los dos criterios se complementan.`;
   }
 
-  // ---------------- 6 · Qué impulsa el riesgo ----------------
+  // ---------------- 5 · Qué impulsa el riesgo ----------------
   function riesgo() {
     const I = D.importancia;
     const imp = I.importancia.slice(0, 10);
@@ -365,7 +355,7 @@
     });
   }
 
-  // ---------------- 7 · Priorización ----------------
+  // ---------------- 6 · Priorización ----------------
   const P = { filas: [], filtradas: [], pagina: 0, porPagina: 25 };
   function priorizacion() {
     const K = D.ranking_vigentes, R = D.resumen;
@@ -456,10 +446,34 @@
   }
 
   // ---------------- pestañas ----------------
-  const RENDER = { resumen, problema, datos, modelos, valor, riesgo, priorizacion, limites: () => { $("#lim-cobertura").textContent = pct(D.resumen.cobertura); } };
+  // ---------------- 7 · Conclusiones ----------------
+  function conclusiones() {
+    const R = D.resumen, m = R.metricas_campeon, G = D.ganancia, C = D.comparacion;
+    const camp = Object.keys(G.curvas).find((n) => n.startsWith("campeón"));
+    const c10 = G.tabla.find((f) => f.revisar === "10%" && f.criterio === camp), v10 = G.tabla.find((f) => f.revisar === "10%" && f.criterio === "mayor valor adjudicado");
+    const base = C.ic.find((f) => f.modelo === "Línea base");
+    $("#conclusiones-mensaje").textContent = `Es posible anticipar el riesgo de sobrecosto al adjudicar: revisando el 10 % de contratos que señala el modelo, ${nf0.format(c10["precisión"] * 100)} de cada 100 tienen sobrecosto, frente a ${nf0.format(m.tasa_prueba * 100)} al azar.`;
+    tarjetas($("#conclusiones-kpis"), [
+      { v: pct(c10["precisión"], 0), e: "de acierto revisando el 10 % que señala el modelo", d: `al azar: ${pct(m.tasa_prueba, 0)} · revisando los contratos más grandes: ${pct(v10["precisión"], 0)} (prueba ${R.anio_prueba})` },
+      { v: pct(c10["% de los sobrecostos"], 0), e: "de todos los sobrecostos se encuentra en ese 10 %", d: `revisando los contratos más grandes: ${pct(v10["% de los sobrecostos"], 0)}` },
+      { v: dec3(m.pr_auc), e: `PR-AUC del campeón (${esc(R.campeon)})`, d: `${nf1.format(m.pr_auc / base.pr_auc)} veces la línea base (${dec3(base.pr_auc)})` },
+      { v: num(R.n_vigentes), e: `contratos vigentes ${R.anios_priorizar.join("-")} priorizados`, d: `${num(R.n_prioridad_alta)} en prioridad alta` },
+    ]);
+    const lista = [
+      `<strong>El sobrecosto es frecuente y costoso:</strong> ${pct(R.tasa_sobrecosto)} de los contratos terminados lo tuvo, y las adiciones sumaron ${nf1.format(D.magnitud.total_adiciones / 1e12)} billones de pesos en ${R.anios_entrenamiento[0]}-${R.anio_prueba}.`,
+      `<strong>Se puede anticipar con información disponible al adjudicar:</strong> el ${esc(R.campeon)} ordena los contratos ${nf1.format(m.pr_auc / base.pr_auc)} veces mejor que el azar, y el resultado se sostuvo en dos ventanas de tiempo y dentro de cada modalidad.`,
+      `<strong>Priorizar con el modelo encuentra más sobrecostos</strong> que revisar los contratos más grandes; revisar los más grandes cubre más monto. Los dos criterios se complementan.`,
+      `<strong>El riesgo depende sobre todo del tipo de bien o servicio, del tamaño y del plazo pactado</strong>; luego, de dónde y en qué sector se contrata.`,
+      `<strong>El resultado es operable:</strong> ${num(R.n_vigentes)} contratos vigentes quedan ordenados por prioridad para revisión, con su enlace a SECOP.`,
+    ];
+    $("#conclusiones-lista").innerHTML = lista.map((t) => `<li>${t}</li>`).join("");
+    $("#lim-cobertura").textContent = pct(R.cobertura);
+  }
+
+  const RENDER = { problema, datos, modelos, valor, riesgo, priorizacion, limites: conclusiones };
   const hechas = new Set();
   function mostrar(tab, empujar) {
-    if (!RENDER[tab]) tab = "resumen";
+    if (!RENDER[tab]) tab = "problema";
     document.querySelectorAll("[role=tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
     document.querySelectorAll("[role=tabpanel]").forEach((p) => (p.hidden = p.id !== `tab-${tab}`));
     if (!hechas.has(tab)) { RENDER[tab](); hechas.add(tab); }
@@ -468,7 +482,7 @@
   }
   function repintar() {
     base();
-    const activa = document.querySelector("[role=tab][aria-selected=true]")?.dataset.tab || "resumen";
+    const activa = document.querySelector("[role=tab][aria-selected=true]")?.dataset.tab || "problema";
     hechas.clear();
     mostrar(activa, false);
   }
@@ -489,7 +503,7 @@
     document.querySelectorAll("[role=tab]").forEach((b) => b.addEventListener("click", () => mostrar(b.dataset.tab, true)));
     window.addEventListener("hashchange", () => mostrar(location.hash.slice(1), false));
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", repintar);
-    mostrar(location.hash.slice(1) || "resumen", false);
+    mostrar(location.hash.slice(1) || "problema", false);
   }
   iniciar();
 })();
