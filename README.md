@@ -1,10 +1,11 @@
 # Priorización de contratos públicos con riesgo de sobrecosto (SECOP II)
 
-Trabajo final de **Machine Learning I** (Maestría, Universidad EAN).
+Trabajo final de **Machine Learning I** (Maestría, Universidad EAN) · **Equipo SECOPE:** Sebastián Gómez (jefe), Kimberly Moreno (líder) y Luly Castiblanco (crack).
 
 Modelo de clasificación que estima, **en el momento de adjudicar** un proceso de contratación pública en Colombia, la probabilidad de que el contrato termine costando más de lo adjudicado. Con esa probabilidad se **ordenan por riesgo los contratos vigentes de 2025 y 2026 que todavía no tienen adiciones**, para que un equipo de control con capacidad limitada revise primero los más riesgosos. El modelo estima si ocurre un sobrecosto, **no su monto**.
 
 - **Cuaderno:** [`notebooks/sobrecosto_secop.ipynb`](notebooks/sobrecosto_secop.ipynb) · [abrir en Colab](https://colab.research.google.com/github/kimmoreno03/ml1-trabajo-final/blob/main/notebooks/sobrecosto_secop.ipynb)
+- **Entrega:** [`entrega/`](entrega/): informe, resumen ejecutivo en inglés, ficha de datos, declaración de IA, anexos de bonos y el archivo `ML1_PFI_SECOPE.zip`
 - **Página de resultados:** [kimmoreno03.github.io/ml1-trabajo-final](https://kimmoreno03.github.io/ml1-trabajo-final/) · código en [`docs/`](docs/); los datos de [`docs/datos/`](docs/datos/) los genera el cuaderno
 
 ## Datos
@@ -30,7 +31,7 @@ Datos abiertos de [datos.gov.co](https://www.datos.gov.co), descargados por la A
 | Terminados | 248.173 |
 | Dentro del tope legal (**base del modelo**, tasa de sobrecosto 25,5 %) | **244.518** |
 
-Contratos vigentes priorizados: **31.499** (firmados en 2025-2026, en ejecución y sin adiciones de valor).
+Contratos vigentes priorizados: **31.486** (firmados en 2025-2026, en ejecución y sin adiciones de valor).
 
 **Limpieza:**
 
@@ -53,7 +54,7 @@ Son cerca del 90 % de los contratos del período, pero no se puede medir su sobr
 sobrecosto = valor_del_contrato > valor_total_adjudicacion   (tolerancia de 0,1 %)
 ```
 
-En SECOP II, `valor_del_contrato` se actualiza con las adiciones. El conjunto de adiciones lo confirma: casi todos los contratos con sobrecosto tienen un registro de modificación de valor o general, frente a menos de un tercio de los que no lo tienen.
+En SECOP II, `valor_del_contrato` se actualiza con las adiciones. El conjunto de adiciones lo confirma: en una muestra de 600 contratos, el 99,7 % de los que tienen sobrecosto tiene un registro de modificación de valor o general, frente al 32,3 % de los que no lo tienen.
 
 ## Variables y fuga de información
 
@@ -112,12 +113,17 @@ Con `EXPORTAR_WEB = True`, la sección 16 escribe en `docs/datos/` los archivos 
 
 En Colab hay que montar Google Drive y apuntar `RAIZ` a la carpeta del proyecto (instrucciones en la sección 1); lo que se guarde fuera de Drive se borra al cerrar la sesión.
 
+Si la carpeta no tiene datos ni corridas guardados (por ejemplo, en un equipo nuevo), el cuaderno activa la descarga y el entrenamiento automáticamente, así que corre de principio a fin desde un núcleo reiniciado. La descarga y el entrenamiento completos tardan varias horas.
+
+**Reproducibilidad:** semilla 42; la corrida reportada (`2026-10-21_1326`) usó Python 3.13.5, scikit-learn 1.8.0, pandas 2.3.3 y numpy 2.3.5, y cada corrida guarda sus versiones en `registro.json`. La asignación de entidades a los pliegues depende de cómo numpy ordena grupos de igual tamaño, que puede variar entre procesadores: en otro equipo, la PR-AUC de validación del campeón dio 0,549 en vez de 0,551, sin cambios en la prueba, el campeón ni el ranking.
+
 ## Estructura del repositorio
 
 ```
 notebooks/sobrecosto_secop.ipynb   análisis, modelos, priorización y exportación
 docs/                              página web (GitHub Pages): index.html, app.js, estilos.css
 docs/datos/                        resultados que lee la página (JSON y CSV), generados por el cuaderno
+entrega/                           documentos de la entrega y ML1_PFI_SECOPE.zip
 data/                              datos descargados en parquet (no se versiona)
 corridas/                          modelos y resultados de cada corrida (no se versiona)
 ```
