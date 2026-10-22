@@ -150,7 +150,59 @@
       { t: "Adiciones (miles de millones)", num: 1, f: (f) => num(f["adiciones (miles de millones)"]) },
       { t: "Adiciones / adjudicado", num: 1, f: (f) => pct(f["adiciones / valor adjudicado"]) },
     ], filas);
+    crecimiento();
     $("#problema-nota").textContent = `Contratos de modalidades con valor adjudicado (${pct(R.cobertura)} de los contratos del período), firmados entre ${filas[0].anio_firma} y ${filas[filas.length - 1].anio_firma} y ya terminados. Pesos corrientes de cada año. Datos de SECOP II descargados el ${R.fecha_descarga}.`;
+  }
+
+  function crecimiento() {
+    const H = D.magnitud.histograma_crecimiento, fig = $("#f-crecimiento");
+    fig.hidden = !H;
+    if (!H) return;
+    const nf2 = new Intl.NumberFormat("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const b = H.bordes, ultimo = H.contratos.length - 1;
+    const barras = H.contratos.map((y, i) => ({ x: (b[i] + b[i + 1]) / 2, y, i }));
+    const iTope = b.findIndex((v) => Math.abs(v - 1.5) < 1e-6) - 1;
+    const enTope = H.contratos[iTope];
+    const rojo = css("--alto"), gris = css("--texto-3");
+    const lineas = [{ x: 1.5, color: rojo, dash: [6, 4], ancho: 1.5 }, ...H.topes_legales.map((v) => ({ x: v, color: gris, dash: [2, 3], ancho: 1 }))];
+    const pintarLineas = {
+      id: "lineas",
+      afterDatasetsDraw(ch) {
+        const { ctx, chartArea: a, scales: { x } } = ch;
+        ctx.save();
+        lineas.forEach((l) => {
+          const px = x.getPixelForValue(l.x);
+          ctx.strokeStyle = l.color; ctx.lineWidth = l.ancho; ctx.setLineDash(l.dash);
+          ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
+        });
+        ctx.restore();
+      },
+    };
+    grafico("g-crecimiento", {
+      type: "bar",
+      data: { datasets: [
+        { label: "Contratos con sobrecosto", data: barras, backgroundColor: css("--serie-1"), barPercentage: 1, categoryPercentage: 1, borderWidth: 0, pointStyle: "rect" },
+        { type: "line", label: "Límite de 50 % de la Ley 80 (1,5 veces)", data: [], borderColor: rojo, backgroundColor: rojo, pointStyle: "line" },
+        { type: "line", label: "Topes legales en salarios mínimos", data: [], borderColor: gris, backgroundColor: gris, pointStyle: "line" },
+      ] },
+      options: {
+        plugins: {
+          legend: { position: "top", align: "end" },
+          tooltip: { filter: (c) => c.datasetIndex === 0, callbacks: {
+            title: (c) => { const i = c[0].raw.i; return i === ultimo ? `${nf2.format(b[i])} veces o más` : `entre ${nf2.format(b[i])} y ${nf2.format(b[i + 1])} veces`; },
+            label: (c) => `${num(c.raw.y)} contratos`,
+          } },
+        },
+        scales: {
+          x: { type: "linear", min: 1, max: 2, offset: false, grid: { display: false }, title: { display: true, text: "valor final / valor adjudicado" },
+               ticks: { stepSize: 0.1, maxRotation: 0, autoSkipPadding: 10, callback: (v) => nf1.format(v) } },
+          y: { beginAtZero: true, title: { display: true, text: "contratos" }, ticks: { callback: (v) => nf0.format(v) } },
+        },
+      },
+      plugins: [pintarLineas],
+    });
+    $("#crecimiento-sub").textContent = `valor final / valor adjudicado · ${num(H.n)} contratos con sobrecosto firmados entre ${H.anios[0]} y ${H.anios[1]} y terminados, antes de descartar los que superan el tope legal`;
+    $("#crecimiento-nota").textContent = `${num(enTope)} contratos (${pct(enTope / H.n)} de los que tienen sobrecosto) crecen justo hasta el límite de 50 % que fija la Ley 80 (barra junto a la línea roja). Por encima de 1,5 veces solo es legal llegar al tope en salarios mínimos de cada contrato (líneas punteadas grises, según el año de firma y el de la última adición); lo que lo supera se descarta como error de registro. La última barra incluye los ${num(H.mayor_a_2)} contratos que crecen más del doble.`;
   }
 
   // ---------------- 2 · Datos y alcance ----------------

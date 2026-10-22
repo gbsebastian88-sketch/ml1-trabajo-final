@@ -187,3 +187,5 @@ main.contenedor { padding-top: 30px; padding-bottom: 40px; }
 
 .bloque-conclusiones { margin-bottom: 18px; }
 #resumen-recorrido { counter-reset: paso 1; }
+.bloque-crecimiento { margin-bottom: 18px; }
+.bloque-crecimiento .nota { margin-top: 10px; }
