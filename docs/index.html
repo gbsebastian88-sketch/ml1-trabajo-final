@@ -19,14 +19,13 @@
   </div>
   <nav class="pestanas" aria-label="Módulos">
     <div class="contenedor pestanas-fila" role="tablist">
-      <button role="tab" data-tab="resumen" aria-selected="true">1 · Resumen</button>
-      <button role="tab" data-tab="problema">2 · El problema</button>
-      <button role="tab" data-tab="datos">3 · Datos y alcance</button>
-      <button role="tab" data-tab="modelos">4 · Modelos</button>
-      <button role="tab" data-tab="valor">5 · Valor de priorizar</button>
-      <button role="tab" data-tab="riesgo">6 · Qué impulsa el riesgo</button>
-      <button role="tab" data-tab="priorizacion">7 · Priorización</button>
-      <button role="tab" data-tab="limites">8 · Limitaciones</button>
+      <button role="tab" data-tab="problema" aria-selected="true">1 · El problema</button>
+      <button role="tab" data-tab="datos">2 · Datos y alcance</button>
+      <button role="tab" data-tab="modelos">3 · Modelos</button>
+      <button role="tab" data-tab="valor">4 · Valor de priorizar</button>
+      <button role="tab" data-tab="riesgo">5 · Qué impulsa el riesgo</button>
+      <button role="tab" data-tab="priorizacion">6 · Priorización</button>
+      <button role="tab" data-tab="limites">7 · Conclusiones</button>
     </div>
   </nav>
 </header>
@@ -34,37 +33,40 @@
 <main class="contenedor">
   <div id="error" class="aviso aviso-error" hidden></div>
 
-  <!-- 1 · Resumen -->
-  <section class="panel" id="tab-resumen" role="tabpanel">
-    <h2 class="mensaje" id="resumen-mensaje"></h2>
-    <div class="tarjetas" id="resumen-kpis"></div>
-    <div class="dos-columnas">
-      <div class="bloque">
-        <h3>La pregunta</h3>
-        <p>En el momento de <strong>adjudicar</strong> un proceso de contratación, ¿se puede anticipar si el contrato terminará costando más de lo adjudicado? Un sobrecosto es una <strong>adición de valor</strong>: el valor final del contrato supera el valor adjudicado.</p>
-        <p>El modelo estima la <strong>probabilidad</strong> de que ocurra un sobrecosto, no su monto. Con esa probabilidad se ordenan los contratos vigentes para revisar primero los de mayor riesgo.</p>
-      </div>
-      <div class="bloque">
-        <h3>Recorrido de la presentación</h3>
-        <ol class="recorrido" id="resumen-recorrido"></ol>
-      </div>
-    </div>
-    <p class="nota" id="resumen-alcance"></p>
-  </section>
-
-  <!-- 2 · El problema -->
-  <section class="panel" id="tab-problema" role="tabpanel" hidden>
+  <!-- 1 · El problema -->
+  <section class="panel" id="tab-problema" role="tabpanel">
     <h2 class="mensaje" id="problema-mensaje"></h2>
     <div class="tarjetas" id="problema-kpis"></div>
+    <div class="dos-columnas">
+      <div class="bloque">
+        <h3>El problema</h3>
+        <p>Un contrato público tiene <strong>sobrecosto</strong> cuando, después de adjudicado, se le hacen <strong>adiciones de valor</strong>: el valor final supera el valor por el que se adjudicó. La Ley 80 permite adicionar hasta el 50 % del valor inicial, pero cada adición es dinero público que no estaba en el presupuesto del proceso.</p>
+        <p>Los equipos de control no pueden revisar todos los contratos. La pregunta del proyecto es si se puede <strong>anticipar, en el momento de adjudicar, qué contratos tienen más riesgo</strong>, para revisarlos primero.</p>
+      </div>
+      <div class="bloque">
+        <h3>Qué hace este proyecto</h3>
+        <ol class="pasos">
+          <li>Toma los contratos de SECOP II firmados entre 2021 y 2024 y ya terminados, y marca cuáles tuvieron sobrecosto.</li>
+          <li>Entrena cinco modelos solo con información disponible al adjudicar (tipo de bien, montos, plazo, competencia, entidad) y elige el mejor con una regla fijada de antemano.</li>
+          <li>Comprueba, con los contratos de 2024 que el modelo no vio, qué se habría encontrado revisando primero los que señala.</li>
+          <li>Ordena por riesgo los contratos vigentes de 2025-2026 que todavía no tienen adiciones.</li>
+        </ol>
+        <p class="nota">El modelo estima la <strong>probabilidad</strong> de que ocurra un sobrecosto, no su monto.</p>
+      </div>
+    </div>
     <div class="dos-columnas">
       <figure class="grafico"><figcaption>Adiciones de valor por año de firma <span>miles de millones de pesos corrientes</span></figcaption><div class="lienzo"><canvas id="g-adiciones"></canvas></div></figure>
       <figure class="grafico"><figcaption>Contratos con sobrecosto <span>% de los contratos firmados cada año</span></figcaption><div class="lienzo"><canvas id="g-tasa"></canvas></div></figure>
     </div>
     <details class="tabla-detalle"><summary>Ver la tabla por año</summary><div id="t-magnitud"></div></details>
+    <div class="bloque">
+      <h3>Recorrido de la presentación</h3>
+      <ol class="recorrido" id="resumen-recorrido"></ol>
+    </div>
     <p class="nota" id="problema-nota"></p>
   </section>
 
-  <!-- 3 · Datos y alcance -->
+  <!-- 2 · Datos y alcance -->
   <section class="panel" id="tab-datos" role="tabpanel" hidden>
     <h2 class="mensaje" id="datos-mensaje"></h2>
     <div class="dos-columnas">
@@ -89,7 +91,7 @@
     <p class="nota">Fuentes: SECOP II - Contratos Electrónicos (jbjy-vk9h), Procesos de Contratación (p6dx-8zbt) y Adiciones (cb9c-h8sn), datos abiertos de datos.gov.co.</p>
   </section>
 
-  <!-- 4 · Modelos -->
+  <!-- 3 · Modelos -->
   <section class="panel" id="tab-modelos" role="tabpanel" hidden>
     <h2 class="mensaje" id="modelos-mensaje"></h2>
     <div class="dos-columnas">
@@ -117,19 +119,19 @@
     </div>
   </section>
 
-  <!-- 5 · Valor de priorizar -->
+  <!-- 4 · Valor de priorizar -->
   <section class="panel" id="tab-valor" role="tabpanel" hidden>
     <h2 class="mensaje" id="valor-mensaje"></h2>
     <div class="tarjetas" id="valor-kpis"></div>
     <div class="dos-columnas">
       <figure class="grafico"><figcaption>Sobrecostos encontrados según cuántos contratos se revisan <span>contratos de 2024 ordenados de mayor a menor prioridad</span></figcaption><div class="lienzo"><canvas id="g-ganancia-conteo"></canvas></div></figure>
-      <figure class="grafico"><figcaption>Pesos de sobrecosto encontrados según cuántos contratos se revisan <span>mismo orden, ponderado por el monto de la adición</span></figcaption><div class="lienzo"><canvas id="g-ganancia-pesos"></canvas></div></figure>
+      <figure class="grafico"><figcaption>Monto de las adiciones que se encontraría según cuántos contratos se revisan <span>% del total de pesos adicionados en 2024 que queda en los contratos revisados</span></figcaption><div class="lienzo"><canvas id="g-ganancia-pesos"></canvas></div></figure>
     </div>
     <div id="t-ganancia"></div>
     <p class="nota" id="valor-nota"></p>
   </section>
 
-  <!-- 6 · Qué impulsa el riesgo -->
+  <!-- 5 · Qué impulsa el riesgo -->
   <section class="panel" id="tab-riesgo" role="tabpanel" hidden>
     <h2 class="mensaje" id="riesgo-mensaje"></h2>
     <div class="dos-columnas">
@@ -143,7 +145,7 @@
     <div class="tres-columnas" id="riesgo-dependencias"></div>
   </section>
 
-  <!-- 7 · Priorización -->
+  <!-- 6 · Priorización -->
   <section class="panel" id="tab-priorizacion" role="tabpanel" hidden>
     <h2 class="mensaje" id="prio-mensaje"></h2>
     <div class="tarjetas" id="prio-kpis"></div>
@@ -173,9 +175,14 @@
     <p class="nota">El ranking es un <strong>orden de prioridad</strong>, no una probabilidad exacta: los contratos vigentes son más recientes y, en promedio, más largos que los de entrenamiento. La entidad, el objeto y el enlace se muestran solo para identificar el contrato; no son variables del modelo.</p>
   </section>
 
-  <!-- 8 · Limitaciones -->
+  <!-- 7 · Conclusiones -->
   <section class="panel" id="tab-limites" role="tabpanel" hidden>
-    <h2 class="mensaje">Qué no hace el modelo y cómo seguir</h2>
+    <h2 class="mensaje" id="conclusiones-mensaje"></h2>
+    <div class="tarjetas" id="conclusiones-kpis"></div>
+    <div class="bloque bloque-conclusiones">
+      <h3>Conclusiones</h3>
+      <ul class="lista-espaciada" id="conclusiones-lista"></ul>
+    </div>
     <div class="dos-columnas">
       <div class="bloque">
         <h3>Limitaciones</h3>
