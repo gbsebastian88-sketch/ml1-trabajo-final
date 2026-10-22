@@ -189,3 +189,8 @@ main.contenedor { padding-top: 30px; padding-bottom: 40px; }
 #resumen-recorrido { counter-reset: paso 1; }
 .bloque-crecimiento { margin-bottom: 18px; }
 .bloque-crecimiento .nota { margin-top: 10px; }
+.cuatro-columnas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+.cuatro-columnas .bloque p { margin: 0; }
+@media (max-width: 1100px) { .cuatro-columnas { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .cuatro-columnas { grid-template-columns: 1fr; } }
+.dos-columnas > *, .tres-columnas > *, .cuatro-columnas > * { min-width: 0; }

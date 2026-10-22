@@ -151,6 +151,11 @@
       { t: "Adiciones / adjudicado", num: 1, f: (f) => pct(f["adiciones / valor adjudicado"]) },
     ], filas);
     crecimiento();
+    {
+      const G = D.ganancia, camp = Object.keys(G.curvas).find((n) => n.startsWith("campeón"));
+      const c10 = G.tabla.find((f) => f.revisar === "10%" && f.criterio === camp), v10 = G.tabla.find((f) => f.revisar === "10%" && f.criterio === "mayor valor adjudicado");
+      $("#problema-exito").innerHTML = `Con la capacidad de revisar el 10 % de los contratos: el <strong>acierto</strong> en lo revisado (${pct(c10["precisión"], 0)} en ${G.anio} frente a ${pct(G.tasa, 0)} al azar), los <strong>sobrecostos encontrados</strong> (${pct(c10["% de los sobrecostos"], 0)} del total) y el <strong>monto adicionado cubierto</strong> (${pct(c10["% de los pesos de sobrecosto"], 0)}). La referencia a superar es revisar primero los contratos más grandes (${pct(v10["precisión"], 0)} de acierto).`;
+    }
     $("#problema-nota").textContent = `Contratos de modalidades con valor adjudicado (${pct(R.cobertura)} de los contratos del período), firmados entre ${filas[0].anio_firma} y ${filas[filas.length - 1].anio_firma} y ya terminados. Pesos corrientes de cada año. Datos de SECOP II descargados el ${R.fecha_descarga}.`;
   }
 
@@ -237,9 +242,23 @@
       "Solo entran contratos <strong>terminados</strong>, para que la etiqueta no cambie después de la descarga.",
       "Se descartan los crecimientos por encima del tope legal de adiciones (Ley 80, art. 40, medido en salarios mínimos).",
       `Se excluyen identificadores y columnas que se actualizan durante la ejecución (fuga de información), incluida la cláusula de ${esc((A.clausulas_excluidas || []).map((c) => c.replace("liquidaci_n", "liquidación")).join(", "))}.`,
-      "La categoría UNSPSC «UNSPECIFIED» crece desde 2023 por un cambio de registro; se trata como categoría propia.",
+      "La categoría UNSPSC «UNSPECIFIED» crece desde 2023 por un cambio de registro; se trata como categoría propia. Las demás variables no tienen faltantes, salvo 3 duraciones sin unidad, que se imputan.",
+      "La etiqueta se validó con el registro de adiciones: casi todos los contratos marcados con sobrecosto tienen una modificación de valor o general registrada, frente a cerca de un tercio de los demás.",
     ];
     $("#datos-controles").innerHTML = controles.map((c) => `<li>${c}</li>`).join("");
+    const pctMod = (m) => (A.conteo_modalidades.find((f) => f.modalidad_de_contratacion === m) || {})["% del total"] / 100;
+    const base = pasos[pasos.length - 1][1];
+    $("#datos-representa").innerHTML = [
+      `<strong>Contratación con competencia</strong> (licitación, selección abreviada, mínima cuantía, concurso de méritos y régimen especial o directa con ofertas): el ${pct(A.cobertura)} de los contratos del período, los únicos con valor adjudicado.`,
+      `<strong>Procesos con un solo contrato</strong>, ya <strong>terminados</strong>, firmados entre ${R.anios_entrenamiento[0]} y ${R.anio_prueba}: ${num(base)} contratos de todo el país y de todos los sectores.`,
+      `Los <strong>contratos vigentes de ${R.anios_priorizar.join("-")}</strong> con esas mismas características, que son los que se priorizan.`,
+    ].map((c) => `<li>${c}</li>`).join("");
+    $("#datos-no-representa").innerHTML = [
+      `<strong>Contratación directa</strong> (${pct(pctMod("Contratación directa"))} de los contratos) y <strong>régimen especial sin ofertas</strong> (${pct(pctMod("Contratación régimen especial"))}): no tienen valor adjudicado, así que no se puede medir su sobrecosto.`,
+      "<strong>Procesos con varios lotes</strong>: el valor adjudicado total no se puede repartir entre sus contratos.",
+      "<strong>Contratos que siguen en ejecución</strong>, a menudo por prórrogas: su etiqueta todavía puede cambiar.",
+      "<strong>Registros con errores</strong> de digitación del valor adjudicado o crecimientos por encima del tope legal.",
+    ].map((c) => `<li>${c}</li>`).join("");
     grafico("g-unspsc", {
       type: "bar",
       data: { labels: A.unspecified_por_anio.map((f) => String(f.anio)), datasets: [{ data: A.unspecified_por_anio.map((f) => f.proporcion), backgroundColor: css("--serie-1"), borderRadius: 4, maxBarThickness: 40 }] },
@@ -297,6 +316,9 @@
         scales: { x: { type: "linear", min: 0, max: 1, title: { display: true, text: "probabilidad predicha" }, ticks: { callback: (v) => nf0.format(v * 100) + " %" } },
           y: { min: 0, max: 1, title: { display: true, text: "frecuencia observada" }, ticks: { callback: (v) => nf0.format(v * 100) + " %" } } } },
     });
+    const sc = C.seleccion.find((f) => f.modelo === camp) || {};
+    const ca = C.curva_aprendizaje, c75 = ca.find((f) => f.fracción === 0.75), c100 = ca.find((f) => f.fracción === 1);
+    $("#modelos-estabilidad").innerHTML = `Entre los 5 pliegues por entidad la PR-AUC del campeón varía con una desviación de ${dec3(sc["desv. entre pliegues"])}. El resultado se mantiene con otra ventana de tiempo y con la definición nominal del objetivo (tabla), y al pasar del 75 % al 100 % de los datos de entrenamiento la PR-AUC solo cambia ${dec3(c100.media - c75.media)}: más datos ya ayudan poco.`;
     const rob = C.robustez.map((f) => ({ ...f, variante: f.variante.replace(/^12\.\d /, "") }));
     tabla($("#t-robustez"), [
       { t: "Variante", f: (f) => esc(f.variante) },
@@ -317,6 +339,7 @@
     const fila = (rev, crit) => G.tabla.find((f) => f.revisar === rev && f.criterio === crit);
     const c10 = fila("10%", camp), v10 = fila("10%", "mayor valor adjudicado");
     const pesosAnio = (D.magnitud.por_anio.find((f) => f.anio_firma === G.anio) || {})["adiciones (miles de millones)"];
+    erroresYUmbral(G, c10);
     $("#valor-mensaje").textContent = `Revisando el 10 % de contratos que señala el modelo se habrían encontrado ${pct(c10["% de los sobrecostos"], 0)} de los sobrecostos de ${G.anio}, con ${pct(c10["precisión"], 0)} de acierto: ${nf1.format(c10["veces el azar"])} veces lo que da revisar al azar.`;
     tarjetas($("#valor-kpis"), [
       { v: pct(c10["precisión"], 0), e: "de acierto en el 10 % que señala el modelo", d: `al azar: ${pct(G.tasa, 0)} · mayores contratos: ${pct(v10["precisión"], 0)}` },
@@ -357,6 +380,23 @@
       { t: "Veces el azar", num: 1, f: (f) => nf1.format(f["veces el azar"]) },
     ], filas, { resaltar: (f) => f.criterio === camp && f.revisar === "10%" });
     $("#valor-nota").textContent = `Evaluación retrospectiva con los contratos firmados en ${G.anio}, que el modelo no vio al entrenar. En número de sobrecostos el modelo supera con claridad a revisar los contratos más grandes; en monto, revisar los contratos más grandes cubre más pesos, porque las adiciones grandes ocurren en contratos grandes y el modelo estima si ocurre un sobrecosto, no su tamaño. Los dos criterios se complementan.`;
+  }
+
+  function erroresYUmbral(G, c10) {
+    const totalPos = Math.round(c10["sobrecostos encontrados"] / c10["% de los sobrecostos"]);
+    const fp = c10["contratos revisados"] - c10["sobrecostos encontrados"], fn = totalPos - c10["sobrecostos encontrados"];
+    $("#valor-errores").innerHTML = [
+      `<strong>Falso positivo:</strong> revisar un contrato que no termina con sobrecosto. Cuesta horas del equipo de control y una carga para la entidad y el contratista. Revisando el 10 % en ${G.anio}: ${num(fp)} de ${num(c10["contratos revisados"])} revisiones sin hallazgo.`,
+      `<strong>Falso negativo:</strong> no revisar un contrato que sí termina con sobrecosto. Cuesta dinero público: un contrato con sobrecosto crece, en la mediana, ${pct(D.magnitud.crecimiento_mediano, 0)} sobre lo adjudicado. Con capacidad para el 10 %, ${num(fn)} sobrecostos quedan sin revisar.`,
+      "Con capacidad limitada, lo que más pesa es acertar en lo que se revisa: por eso la métrica principal es la precisión de la lista (PR-AUC y precisión en el 10 %).",
+    ].map((c) => `<li>${c}</li>`).join("");
+    const C = D.comparacion, camp = C.campeon, fc = C.tabla.find((f) => f.modelo === camp);
+    const K = D.ranking_vigentes, corte = K.filas[Math.min(K.prioridad_alta, K.filas.length) - 1];
+    $("#valor-umbral").innerHTML = [
+      `<strong>Operar por capacidad:</strong> revisar, en orden, los N contratos de mayor probabilidad que permita el equipo. Con el 10 % de los vigentes son ${num(K.prioridad_alta)} contratos${corte ? `, con probabilidad desde ${pct(corte.probabilidad, 0)}` : ""}.`,
+      `<strong>Si se prefiere un umbral fijo:</strong> ${nf3.format(fc.umbral)}, el que maximiza F1 en validación. Marca el ${pct(fc["% marcados"], 0)} de los contratos, con ${pct(fc["precisión"], 0)} de precisión y ${pct(fc["exhaustividad"], 0)} de exhaustividad: sirve solo si la capacidad alcanza para revisar tantos.`,
+      "Al crecer la capacidad conviene bajar el corte: se encuentran más sobrecostos, con menos acierto por revisión (curvas de arriba).",
+    ].map((c) => `<li>${c}</li>`).join("");
   }
 
   // ---------------- 5 · Qué impulsa el riesgo ----------------
@@ -520,6 +560,16 @@
     ];
     $("#conclusiones-lista").innerHTML = lista.map((t) => `<li>${t}</li>`).join("");
     $("#lim-cobertura").textContent = pct(R.cobertura);
+    $("#gob-deriva").innerHTML = `<strong>Deriva del desempeño:</strong> si, al terminar los contratos priorizados, el acierto del 10 % más riesgoso baja de ${pct(v10["precisión"], 0)} (lo que logra revisar los contratos más grandes), hay que reentrenar antes de seguir usándolo. En todo caso, reentrenar cada año.`;
+    const rep = D.ranking_vigentes.reparto_prioridad_alta;
+    const mayor = (campo) => (rep[campo] || []).filter((f) => f["% en todos los vigentes"] >= 0.02).sort((a, b) => b["veces su peso"] - a["veces su peso"])[0];
+    const g = ["modalidad", "tipo_de_contrato", "sector", "departamento"].map((c) => [c, mayor(c)]).filter(([, f]) => f);
+    const nombre = (c, f) => esc(c === "sector" ? `el sector ${f[c].toLowerCase()}` : c === "tipo_de_contrato" ? `los contratos de ${f[c].toLowerCase()}` : c === "departamento" ? f[c] : `la modalidad «${f[c]}»`);
+    $("#gob-perjuicio").innerHTML = [
+      `<strong>Entidades y contratistas de los grupos que el modelo marca más:</strong> ${g.map(([c, f]) => `${nombre(c, f)} (${nf1.format(f["veces su peso"])} veces su peso)`).join(", ")}. Recibirían más revisiones; hay que vigilar que la diferencia se explique por su riesgo observado.`,
+      "<strong>Entidades cumplidas en grupos de alto riesgo:</strong> el departamento y el sector pueden subir la probabilidad de una entidad por el comportamiento promedio de su grupo.",
+      "<strong>Lo que queda fuera del alcance</strong> (contratación directa): el modelo no dice nada de esos contratos, y no figurar en la lista no significa que no tengan riesgo.",
+    ].map((c) => `<li>${c}</li>`).join("");
   }
 
   const RENDER = { problema, datos, modelos, valor, riesgo, priorizacion, limites: conclusiones };

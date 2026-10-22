@@ -54,6 +54,13 @@
         <p class="nota">El modelo estima la <strong>probabilidad</strong> de que ocurra un sobrecosto, no su monto.</p>
       </div>
     </div>
+    <h3 class="subtitulo-seccion">La decisión que apoya el modelo</h3>
+    <div class="cuatro-columnas">
+      <div class="bloque"><h3>Qué se decide</h3><p>Qué contratos vigentes revisar primero, cuando la capacidad del equipo de control no alcanza para revisarlos todos.</p></div>
+      <div class="bloque"><h3>Quién decide</h3><p>El equipo que hace seguimiento a la contratación: la oficina de control interno de la entidad, una contraloría o una veeduría ciudadana.</p></div>
+      <div class="bloque"><h3>A quién afecta</h3><p>A las entidades y contratistas cuyos contratos se revisan primero, y a la ciudadanía, que financia las adiciones.</p></div>
+      <div class="bloque"><h3>Cómo se mide el éxito</h3><p id="problema-exito"></p></div>
+    </div>
     <div class="dos-columnas">
       <figure class="grafico"><figcaption>Adiciones de valor por año de firma <span>miles de millones de pesos corrientes</span></figcaption><div class="lienzo"><canvas id="g-adiciones"></canvas></div></figure>
       <figure class="grafico"><figcaption>Contratos con sobrecosto <span>% de los contratos firmados cada año</span></figcaption><div class="lienzo"><canvas id="g-tasa"></canvas></div></figure>
@@ -93,6 +100,16 @@
         <figure class="grafico compacto"><figcaption>Contratos sin categoría UNSPSC («UNSPECIFIED») <span>% por año de firma</span></figcaption><div class="lienzo bajo"><canvas id="g-unspsc"></canvas></div></figure>
       </div>
     </div>
+    <div class="dos-columnas">
+      <div class="bloque">
+        <h3>A quién representan los datos</h3>
+        <ul id="datos-representa"></ul>
+      </div>
+      <div class="bloque">
+        <h3>A quién no representan</h3>
+        <ul id="datos-no-representa"></ul>
+      </div>
+    </div>
     <p class="nota">Fuentes: SECOP II - Contratos Electrónicos (jbjy-vk9h), Procesos de Contratación (p6dx-8zbt) y Adiciones (cb9c-h8sn), datos abiertos de datos.gov.co.</p>
   </section>
 
@@ -112,12 +129,30 @@
         <p id="modelos-campeon" class="destacado"></p>
       </div>
     </div>
+    <h3 class="subtitulo-seccion">Diseño experimental: cómo se evitó la fuga, el desbalance y el mal uso de la prueba</h3>
+    <div class="tres-columnas">
+      <div class="bloque">
+        <h3>Fuga de información</h3>
+        <p>Solo entran variables conocidas al adjudicar. Se excluyen el valor final, el estado, las fechas reales, los días adicionados, los pagos y la cláusula de liquidación, que cambian durante la ejecución.</p>
+        <p>Prueba de lo que pasaría si no: con esas columnas la PR-AUC subiría de <strong>0,55 a 0,84</strong>, y con el valor final a <strong>0,99</strong>. Son cifras inválidas: el modelo estaría leyendo la respuesta.</p>
+      </div>
+      <div class="bloque">
+        <h3>Desbalance de clases</h3>
+        <p>Uno de cada cuatro contratos tiene sobrecosto. Por eso la métrica principal es la <strong>PR-AUC</strong>, que mide la precisión de la lista que revisa el equipo y se compara con 0,255 al azar; la ROC-AUC se reporta como complemento.</p>
+        <p>La regresión logística se entrena con pesos por clase; los modelos de árboles no lo necesitan para ordenar.</p>
+      </div>
+      <div class="bloque">
+        <h3>Uso de la prueba</h3>
+        <p>Entrenamiento 2021-2023 y prueba 2024, que se usa <strong>una sola vez</strong>. Hiperparámetros, iteraciones, umbrales y el campeón se deciden con validación cruzada que separa entidades, y el preprocesamiento se ajusta dentro de cada pliegue.</p>
+      </div>
+    </div>
     <h3 class="subtitulo-seccion">Comparación de modelos</h3>
     <div id="t-modelos"></div>
     <div class="dos-columnas">
       <figure class="grafico"><figcaption>¿Las probabilidades son creíbles? (calibración en 2024) <span>frecuencia observada frente a probabilidad predicha</span></figcaption><div class="lienzo"><canvas id="g-calibracion"></canvas></div></figure>
       <div class="bloque">
         <h3>Estabilidad</h3>
+        <p id="modelos-estabilidad"></p>
         <div id="t-robustez"></div>
         <details class="tabla-detalle"><summary>Desempeño del campeón por modalidad</summary><div id="t-modalidad"></div></details>
       </div>
@@ -133,6 +168,16 @@
       <figure class="grafico"><figcaption>Monto de las adiciones que se encontraría según cuántos contratos se revisan <span>% del total de pesos adicionados en 2024 que queda en los contratos revisados</span></figcaption><div class="lienzo"><canvas id="g-ganancia-pesos"></canvas></div></figure>
     </div>
     <div id="t-ganancia"></div>
+    <div class="dos-columnas">
+      <div class="bloque">
+        <h3>El costo de cada error</h3>
+        <ul id="valor-errores"></ul>
+      </div>
+      <div class="bloque">
+        <h3>Umbral recomendado</h3>
+        <ul id="valor-umbral"></ul>
+      </div>
+    </div>
     <p class="nota" id="valor-nota"></p>
   </section>
 
@@ -210,12 +255,43 @@
         </ul>
       </div>
     </div>
+    <h3 class="subtitulo-seccion">Gobernanza: uso responsable del modelo</h3>
+    <div class="tres-columnas">
+      <div class="bloque">
+        <h3>Cómo usarlo</h3>
+        <ul class="lista-espaciada">
+          <li><strong>Para priorizar, no para sancionar.</strong> Una probabilidad alta no prueba ninguna irregularidad: indica dónde mirar primero.</li>
+          <li><strong>Siempre con revisión humana.</strong> El equipo de control decide qué revisar y qué concluir.</li>
+          <li><strong>Con una muestra al azar.</strong> Revisar también un pequeño porcentaje de contratos elegidos al azar permite medir el desempeño real y detectar sesgos.</li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>Cuándo deja de valer</h3>
+        <ul class="lista-espaciada">
+          <li><strong>Cambios en la norma:</strong> otro tope de adiciones u otras modalidades de contratación.</li>
+          <li><strong>Cambios en el registro de SECOP II:</strong> como el aumento de la categoría UNSPSC sin código desde 2023.</li>
+          <li id="gob-deriva"></li>
+        </ul>
+      </div>
+      <div class="bloque">
+        <h3>A quién podría perjudicar</h3>
+        <ul class="lista-espaciada" id="gob-perjuicio"></ul>
+      </div>
+    </div>
+    <div class="bloque bloque-conclusiones">
+      <h3>Equipo SECOPE</h3>
+      <ul class="lista-espaciada equipo">
+        <li><strong>Sebastián Gómez · Jefe.</strong> Planteamiento del problema, diseño metodológico, cuaderno de modelado y página de resultados.</li>
+        <li><strong>Kimberly Moreno · Líder.</strong> Coordinación del equipo, repositorio oficial de la entrega y publicación en GitHub Pages.</li>
+        <li><strong>Luly Castiblanco · Crack.</strong> Revisión de los datos y los resultados, y preparación de la exposición.</li>
+      </ul>
+    </div>
   </section>
 </main>
 
 <footer class="pie">
   <div class="contenedor">
-    <p id="pie-texto">Trabajo final de Machine Learning I · Universidad EAN. Datos abiertos de SECOP II (datos.gov.co). Resultados generados por el cuaderno <code>notebooks/sobrecosto_secop.ipynb</code>.</p>
+    <p id="pie-texto">Trabajo final de Machine Learning I · Universidad EAN · Equipo SECOPE: Sebastián Gómez, Kimberly Moreno y Luly Castiblanco. Datos abiertos de SECOP II (datos.gov.co). Resultados generados por el cuaderno <code>notebooks/sobrecosto_secop.ipynb</code>.</p>
   </div>
 </footer>
 
