@@ -13,6 +13,7 @@
 
 - **Acceso:** API Socrata del Portal Nacional de Datos Abiertos (`https://www.datos.gov.co/resource/<id>.csv`), consultada desde el cuaderno.
 - **Fecha de acceso:** 20 de octubre de 2026 (carpeta `data/2026-10-20/`).
+- **Archivos crudos:** en la carpeta `datos_crudos/` del .zip, sin la contratación directa ni el régimen especial sin ofertas (excluidos desde la consulta). De Procesos se incluyen las 650.043 publicaciones que corresponden a los contratos descargados.
 - **Cómo obtenerlos de nuevo:** ver `datos_crudos/como_obtener_los_datos.md`.
 
 ## 2. Licencia o autorización

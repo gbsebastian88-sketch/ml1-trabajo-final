@@ -230,3 +230,6 @@ corridas/
 # La página web sí publica sus archivos de datos (incluido el CSV del ranking)
 !docs/datos/
 !docs/datos/*.csv
+
+# Entrega: el .zip lleva los datos crudos (~66 MB); se arma con py entrega/armar_zip.py
+entrega/ML1_PFI_SECOPE.zip

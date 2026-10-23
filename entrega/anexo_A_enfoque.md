@@ -1,46 +1,26 @@
-# Anexo A · Bono de enfoque: despliegue del modelo
+# Anexo A · Bono de enfoque: investigación aplicada
 
 **Equipo:** SECOPE · Machine Learning I · Universidad EAN
 
-> Nota del equipo: para este curso, desplegar en una página de GitHub Pages cuenta como despliegue válido. Si la caja del bono pide evidencias adicionales, agregarlas en este archivo.
+**Enfoque declarado:** investigación aplicada, sostenido desde el reto R10 hasta la entrega.
 
-## 1. Qué se desplegó
+Este anexo indica dónde está en el informe (`informe_PFI.pdf`) cada elemento que pide el bono.
 
-Una **herramienta prescriptiva**, no una calculadora: la página publica el ranking de los **31.486 contratos vigentes de 2025-2026** que todavía no tienen adiciones de valor, ordenados por la probabilidad de sobrecosto que estima el modelo campeón (Gradient Boosting). El equipo de control elige cuántos puede revisar y la página le muestra, en orden, cuáles revisar primero.
-
-- **Página oficial:** https://kimmoreno03.github.io/ml1-trabajo-final/
-- **Copia de respaldo:** https://gbsebastian88-sketch.github.io/ml1-trabajo-final/
-- **Código:** carpeta `docs/` del repositorio https://github.com/kimmoreno03/ml1-trabajo-final
-
-## 2. Cómo funciona
-
-| Paso | Dónde | Qué hace |
+| Elemento que pide el bono | Dónde está en el informe | Resumen |
 | --- | --- | --- |
-| 1. Descarga | cuaderno, sección 2 | trae los datos de la API de datos.gov.co y los guarda en parquet |
-| 2. Entrenamiento y evaluación | secciones 3 a 13 | limpia, entrena 5 modelos, elige el campeón y lo evalúa en 2024 |
-| 3. Modelo final | sección 14 | reentrena el campeón con 2021-2024 y calcula la probabilidad de cada contrato vigente |
-| 4. Exportación | sección 16 | escribe en `docs/datos/` los resultados en JSON y el ranking completo en CSV |
-| 5. Publicación | GitHub Pages | al fusionar cambios en `main`, la página se actualiza sola en uno o dos minutos |
+| Pregunta o hipótesis | Sección 1.1 | ¿Se puede anticipar, con la información disponible al adjudicar, qué contratos públicos terminarán con sobrecosto, con un acierto que justifique usarlo para priorizar la revisión? H1: en el 10 % más riesgoso, la precisión supera al azar y a revisar primero los contratos más grandes. H2: el resultado se sostiene en otra ventana de tiempo, con otra definición del objetivo y dentro de cada modalidad. |
+| Estado del arte (≥ 4 fuentes en APA 7, ≥ 2 en inglés) | Sección 1.2 y referencias | Flyvbjerg et al. (2002), Fazekas y Kocsis (2020), Gallego et al. (2021), Moon et al. (2020) y Saito y Rehmsmeier (2015). Las cinco están en inglés y tienen DOI. |
+| Método | Secciones 2 a 4 | Diseño predictivo retrospectivo con datos reales de SECOP II: limpieza con reglas explícitas, 30 variables conocidas al adjudicar, partición temporal (2021-2023 → 2024), validación cruzada agrupada por entidad, cinco modelos contra una línea base y regla del campeón fijada de antemano. |
+| Validez de las conclusiones | Sección 5.7 (y 5.4) | Validez interna (sin fuga, prueba usada una sola vez, intervalos por bootstrap de entidades), validez externa (alcance de la contratación con competencia), validez de la etiqueta (99,7 % con modificación registrada) y lo que no se puede concluir. |
+| Limitaciones | Secciones 6.2 y 6.3 | Alcance, cambios de norma y de registro, deriva, contratos vigentes y posibles perjuicios por grupo. |
+| Aporte a quien decide o a la literatura | Sección 6.4 | A quien decide: un ranking de 31.486 contratos vigentes con el acierto esperado por fracción revisada. A la literatura: evidencia de que el sobrecosto de la contratación colombiana con competencia se anticipa al adjudicar, con una etiqueta depurada con el tope legal y una evaluación que separa entidades y años. |
 
-La página es estática (HTML, CSS y JavaScript con Chart.js incluido en el repositorio): no ejecuta Python ni el modelo, solo lee los archivos que exporta el cuaderno. Así funciona sin servidor y cualquiera puede verificar los resultados.
+## Resultado frente a las hipótesis
 
-## 3. Qué ofrece al usuario
+- **H1 se sostiene.** En los contratos de 2024, revisar el 10 % que señala el modelo da 64,8 % de precisión, frente a 25,5 % al azar y 45,0 % al revisar primero los contratos más grandes.
+- **H2 se sostiene.** PR-AUC de 0,568 en la segunda ventana (2021-2022 → 2023), 0,544 con el objetivo nominal, y ROC-AUC entre 0,73 y 0,80 en siete de las ocho modalidades.
 
-- **Siete pestañas en orden de presentación:** el problema y la decisión, datos y alcance, modelos, valor de priorizar, qué impulsa el riesgo, priorización y conclusiones.
-- **Pestaña de priorización:** selector de cuántos contratos revisar, filtros por departamento, modalidad, sector y tipo de contrato, búsqueda por entidad u objeto, descarga de la selección en CSV y enlace a cada contrato en SECOP II.
-- **Contexto para decidir:** costo de cada error, umbral recomendado (operar por capacidad: el 10 % de los vigentes son 3.149 contratos), gobernanza y límites de uso.
-- **Diseño para cualquier pantalla:** modo claro y oscuro, y vista de celular sin desplazamiento horizontal.
+## Material de apoyo
 
-## 4. Evidencias
-
-1. La página publicada en la dirección de la sección 1.
-2. El historial de cambios del repositorio, con las solicitudes de extracción (PR) que publicaron la página.
-3. El cuaderno `cuaderno_PFI.ipynb`, cuya sección 16 genera los archivos que la página muestra.
-4. Los archivos `docs/datos/*.json` y `docs/datos/ranking_vigentes.csv` del repositorio.
-
-## 5. Mantenimiento
-
-1. Correr el cuaderno con `DESCARGAR_DATOS = True` y `ENTRENAR_MODELOS = True` (datos nuevos y modelo reentrenado), o con ambos en `False` para regenerar la página con la corrida guardada.
-2. Hacer commit y push de `docs/` y abrir una solicitud de extracción (PR) hacia el repositorio oficial.
-3. Al fusionarla, la página se actualiza.
-4. Se recomienda reentrenar cada año y comparar el ranking con lo que ocurra cuando los contratos priorizados terminen.
+- Cuaderno reproducible: `cuaderno_PFI.ipynb`.
+- Página con los resultados y el ranking: https://kimmoreno03.github.io/ml1-trabajo-final/
