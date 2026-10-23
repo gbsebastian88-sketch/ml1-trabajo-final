@@ -62,7 +62,15 @@
 <div class="formula">sobrecosto = 1 si valor final del contrato &gt; valor total adjudicado × 1,001</div>
 <p>En SECOP II, el valor del contrato se actualiza con cada adición, así que muestra el valor final. El margen de 0,1 % evita marcar diferencias de redondeo.</p>
 <p><b>Por qué este paradigma.</b> Es supervisado porque la etiqueta se observa en los contratos ya terminados. Es clasificación y no regresión porque la decisión es binaria (revisar o no) y lo que se necesita es un orden por riesgo; el monto de la adición está muy concentrado (el 1 % de los contratos con sobrecosto suma el 43 % de las adiciones) y una regresión sobre él quedaría dominada por pocos casos. El resultado es <b>prescriptivo</b>: el modelo final ordena por riesgo los contratos vigentes de 2025-2026 que todavía no tienen adiciones.</p>
-<p><b>Pérdida técnica y métrica de negocio.</b> Los modelos se entrenan minimizando la entropía cruzada (pérdida logarítmica), que es la función de pérdida. El éxito para el negocio se mide aparte, con la precisión en el 10 % revisado y el monto adicionado cubierto; para elegir el modelo se usa la PR-AUC, que resume la calidad del orden.</p>
+<p><b>Pérdida técnica y métrica de negocio.</b> Cada modelo optimiza su propio criterio durante el entrenamiento:</p>
+<ul>
+  <li><b>Regresión logística:</b> minimiza la entropía cruzada (pérdida logarítmica) con penalización L2 (C = 0,1) y pesos por clase, con el algoritmo L-BFGS.</li>
+  <li><b>Árbol de decisión:</b> en cada corte elige la variable y el umbral que más reducen la impureza de Gini (algoritmo CART); después se poda por complejidad (<code>ccp_alpha</code>).</li>
+  <li><b>Bosque aleatorio:</b> cada árbol reduce la impureza de Gini sobre una muestra bootstrap de contratos y un subconjunto de variables por corte; el bosque promedia las probabilidades de sus árboles.</li>
+  <li><b>Gradient Boosting:</b> minimiza la entropía cruzada agregando árboles en secuencia, cada uno ajustado al gradiente de esa pérdida, con tasa de aprendizaje de 0,06 y regularización L2 de 1,0.</li>
+  <li><b>Red neuronal:</b> minimiza la entropía cruzada con penalización L2 (<code>alpha</code>) mediante el optimizador Adam, en lotes de 256 contratos.</li>
+</ul>
+<p>El éxito para el negocio se mide aparte, con la precisión en el 10 % revisado y el monto adicionado cubierto; para elegir el modelo se usa la PR-AUC, que resume la calidad del orden.</p>
 <p><b>Riesgos éticos iniciales.</b> Que una probabilidad alta se lea como sospecha de corrupción; que el modelo concentre las revisiones en ciertos departamentos, sectores o modalidades; y que deje fuera, sin decirlo, a la contratación directa. La sección 6 los trata con sus controles.</p>
 
 <figure class="evitar">
@@ -95,7 +103,7 @@
   <tr class="destacada"><td>Dentro del tope legal de adiciones (base del modelo)</td><td class="n">244.518</td><td>crecimientos imposibles por ley: errores de registro</td></tr>
 </table>
 <ul>
-  <li><b>Errores de digitación:</b> 2.032 registros (0,52 %) tenían un valor adjudicado incoherente con el precio base. Con ellos, lo adjudicado sumaba 115.856 billones de pesos; sin ellos, 250,5 billones. Los filtros siguientes retiran otros registros con montos atípicos: en la base final, lo adjudicado suma 112,5 billones y las adiciones son el 17,5 % de esa cifra.</li>
+  <li><b>Errores de digitación:</b> 2.032 registros (0,52 %) tenían un valor adjudicado incoherente con el precio base. Con ellos, lo adjudicado en todos los registros de 2021 a 2026 sumaba 115.856 billones de pesos; sin ellos, 250,5 billones. Esa cifra incluye los contratos de 2025-2026 y los que no pasan los filtros siguientes; en la base del modelo (2021-2024, terminados y dentro del tope legal), lo adjudicado suma 112,5 billones y las adiciones son el 17,5 % de esa cifra.</li>
   <li><b>Tope legal:</b> se calcula en salarios mínimos (1 + 0,5 × SMMLV del año de la última adición / SMMLV del año de firma). Salen 3.655 contratos. Un corte fijo de 1,5 veces en pesos sacaría 5.600 y descartaría 1.945 contratos legales; se usa como prueba de robustez.</li>
   <li><b>Validación de la etiqueta:</b> en una muestra de 300 contratos con sobrecosto y 300 sin él, el 99,7 % de los primeros tiene una modificación de valor o general registrada, frente al 32,3 % de los segundos.</li>
   <li><b>Faltantes:</b> solo 3 duraciones sin unidad (se imputan). La categoría UNSPSC sin código (<code>UNSPECIFIED</code>) sube de 0,7 % en 2021 a 10,1 % en 2024 por un cambio de registro; se trata como categoría propia.</li>
@@ -122,7 +130,7 @@
 <div class="seccion">
 <h2>3. Preparación y diseño experimental</h2>
 <h3>3.1 Variables</h3>
-<p>El modelo usa <b>30 variables conocidas al adjudicar</b>: 20 categóricas (departamento, orden, sector y rama de la entidad; tipo y modalidad del contrato; origen y destino de los recursos; tipo de proveedor; seis cláusulas; segmento y familia UNSPSC del bien o servicio) y 10 numéricas (precio base y valor adjudicado en logaritmo, descuento al adjudicar, duración pactada en días, cinco indicadores de competencia y mes de firma). Ninguna identifica a la entidad o al proveedor. La lista completa está en el anexo 1.</p>
+<p>El modelo usa <b>30 variables conocidas al adjudicar</b>: 20 categóricas (departamento, orden, sector y rama de la entidad, y si es centralizada; tipo y modalidad del contrato; origen y destino de los recursos; tipo de proveedor; seis cláusulas; segmento y familia UNSPSC del bien o servicio) y 10 numéricas (precio base y valor adjudicado en logaritmo, descuento al adjudicar, duración pactada en días, cinco indicadores de competencia y mes de firma). Ninguna identifica a la entidad o al proveedor. La lista completa está en el anexo 1.</p>
 
 <h3>3.2 Cómo se evitó la fuga de información</h3>
 <p>Muchas columnas de SECOP II se actualizan durante la ejecución. Una variable entra solo si se conoce al adjudicar y no cambia después. Se excluyen el valor final, el estado, las fechas y la duración real del contrato, los días adicionados, los pagos y las fuentes de financiación. También se excluyen la cláusula de liquidación, porque su distribución cambia después de firmar (distancia de variación total de 0,125, sobre el umbral de 0,10), y el texto libre del objeto, porque repite la categoría UNSPSC e identifica a la entidad.</p>
