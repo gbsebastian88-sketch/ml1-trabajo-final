@@ -39,14 +39,15 @@
 
 ## Kimberly Moreno (Líder)
 
-**Herramienta:** Claude (Anthropic), en Claude Code en la web (claude.ai/code): una sesión en la nube conectada a los repositorios de GitHub del proyecto. Entre el 17 y el 22 de octubre de 2026.
+**Herramienta:** Claude (Anthropic), en Claude Code en la web (claude.ai/code): una sesión en la nube conectada a los repositorios de GitHub del proyecto. Entre el 17 y el 23 de octubre de 2026.
 
 **Para qué se usó:**
 
-1. Montar el repositorio del proyecto (kimmoreno03/ml1-trabajo-final) y configurar el acceso a datos.gov.co desde el entorno de trabajo.
-2. Revisar los dos conjuntos de SECOP II (Contratos y Procesos): identificar la llave del cruce, proponer cómo definir el sobrecosto e identificar las columnas que son identificadores o tienen fuga de información, verificándolo con los datos reales.
+1. Montar el repositorio del proyecto (`kimmoreno03/ml1-trabajo-final`) y configurar el acceso a datos.gov.co desde el entorno de trabajo.
+2. Revisar los conjuntos de SECOP II (Contratos y Procesos): identificar la llave del cruce, proponer cómo definir el sobrecosto e identificar las columnas que son identificadores o tienen fuga de información, verificándolo con los datos reales.
 3. Construir la primera versión del cuaderno (descarga por la API, cruce, variable objetivo, exclusión de columnas, modelo base y comparación del efecto de la fuga) y el README inicial.
-4. Revisar la versión ampliada del cuaderno que hizo el equipo, sin modificarla, y explicar las consecuencias de excluir la contratación directa y el régimen especial sin ofertas.
+4. Revisar, sin modificarlos, la versión ampliada del cuaderno, el informe y el resumen ejecutivo frente a la rúbrica de la entrega.
+5. Aplicar los ajustes acordados: reorientar el informe y el resumen al enfoque de intraemprendimiento, redactar el anexo A, corregir el resumen en inglés y las inconsistencias del informe, confirmar la licencia de los datos y regenerar los PDF de la entrega.
 
 **Prompts representativos** (textuales):
 
@@ -54,15 +55,17 @@
 - «sí, 1. usa A', 2. al adjudicar y 3. súbelo a main»
 - «mira hemos realizado algunos ajustes el el notebook de acuerdo a lo que queremos presentar en el modelo solo quiero que lo revises como lo ves no modifiques nada solo quiero validaciones»
 - «pero digamos con ese 90% de la datos que se pierden que pasa»
+- «Puedes revisar que cumpla con estas indicaciones por favor no modifiques nada sin mi permiso solo quiero que hagas la respectiv revision»
+- «Aceptamos tu sugerencia de orientar el reporte hacia el "intraemprendimiento". Por favor, reestructura y ajusta la narrativa general del reporte para que se alinee con este concepto.»
 
 **Qué se aceptó:**
 
-- La llave del cruce entre tablas (proceso_de_compra = id_del_portafolio), verificada con los datos.
-- La definición del objetivo: sobrecosto = valor del contrato > valor adjudicado. Se aceptó después de verificar que valor_del_contrato incluye las adiciones, porque el crecimiento se acumula en 1,5x, el tope legal.
-- La lista de identificadores y de columnas con fuga, cada una con su evidencia: las fuentes de financiación suman el valor final; la fecha de fin se mueve con las prórrogas; estado_contrato y dias_adicionados delatan la adición.
+- La llave del cruce entre tablas (`proceso_de_compra` = `id_del_portafolio`), verificada con los datos.
+- La definición del objetivo (sobrecosto = valor del contrato > valor adjudicado), después de verificar que `valor_del_contrato` incluye las adiciones: el crecimiento se acumula en 1,5 veces, el tope legal.
+- La lista de identificadores y de columnas con fuga, cada una con su evidencia: las fuentes de financiación suman el valor final; la fecha de fin se mueve con las prórrogas; `estado_contrato` y `dias_adicionados` delatan la adición.
 - Predecir en el momento de adjudicar, de modo que las variables de competencia y el valor adjudicado sí se pueden usar.
-- La primera versión del cuaderno y del README, que luego el equipo amplió.
-- Las observaciones de la revisión: celdas sin resultados que hay que volver a ejecutar, la cifra 0,550/0,551 por unificar y el salario mínimo de 2026 por verificar.
+- Las observaciones de la revisión de la entrega: el anexo A no correspondía al bono de enfoque, quedaban textos de borrador, el resumen en inglés afirmaba que la prueba solo tenía entidades no vistas y el informe decía «siete cláusulas» en lugar de seis.
+- El enfoque de intraemprendimiento, el anexo A y los ajustes de redacción, revisados por la integrante.
 
 **Qué se descartó o se modificó:**
 
@@ -70,10 +73,11 @@
 - Definir el sobrecosto como valor facturado > valor del contrato: se descartó porque casi la mitad de los contratos tiene el valor facturado en 0 y depende de la ejecución.
 - Predecir desde la publicación del proceso: se prefirió el momento de la adjudicación.
 - Leer los datos desde Google Drive o desde Chrome: no fue posible en el entorno de la herramienta; se usó directamente la API de datos.gov.co.
-- Un análisis adicional para validar el precio base como valor inicial en la contratación directa: lo detuve yo, porque en ese momento solo quería la explicación, sin ejecutar nada.
-- La primera versión del cuaderno, con solo 2022 y una partición aleatoria por entidad: la reemplazó la versión ampliada del equipo (2021-2024, partición temporal y selección automática del campeón).
+- Un análisis adicional para validar el precio base como valor inicial en la contratación directa: lo detuvo la integrante, porque en ese momento solo quería la explicación.
+- La primera versión del cuaderno (solo 2022 y partición aleatoria por entidad): la reemplazó la versión ampliada del equipo (2021-2024, partición temporal y selección automática del campeón).
+- La sección de microcredenciales no la propuso la IA: las microcredenciales y su contenido los aportó la integrante; la IA solo redactó dónde se aplicó cada técnica en el proyecto.
 
-**Verificación:** la IA ejecutó la primera versión del cuaderno en su entorno, únicamente con datos públicos de datos.gov.co. Las cifras finales del informe salen de la versión ampliada, ejecutada en el equipo de Sebastián. La revisión final de la IA no modificó el cuaderno.
+**Verificación:** la IA ejecutó la primera versión del cuaderno en su entorno, únicamente con datos públicos de datos.gov.co. Las cifras finales del informe salen de la versión ampliada, ejecutada en el equipo de Sebastián (corrida `2026-10-21_1326`); al regenerar los PDF no se cambió ninguna cifra, solo la redacción, la estructura y las aclaraciones.
 
 ## Luly Castiblanco (Crack)
 

@@ -15,7 +15,7 @@ Son registros reales de la contratación pública colombiana en SECOP II, el sis
 | SECOP II - Adiciones (`cb9c-h8sn`) | https://www.datos.gov.co/Gastos-Gubernamentales/SECOP-II-Adiciones/cb9c-h8sn | Agencia Nacional de Contratación Pública - Colombia Compra Eficiente | 20 de octubre de 2026 |
 
 - **Cómo se obtuvieron:** directamente de la API oficial del Portal Nacional de Datos Abiertos, desde el cuaderno, sin intermediarios. Las consultas exactas, con sus filtros, están en `datos_crudos/como_obtener_los_datos.md`.
-- **Licencia:** datos abiertos publicados en cumplimiento de la Ley 1712 de 2014. El portal indica que sus conjuntos se publican con licencia Creative Commons Atribución-CompartirIgual 4.0 (CC BY-SA 4.0), que permite reutilizarlos y redistribuirlos citando la fuente y compartiendo los derivados con la misma licencia.
+- **Licencia:** datos abiertos publicados en cumplimiento de la Ley 1712 de 2014. Los tres conjuntos tienen licencia Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0), que permite reutilizarlos y redistribuirlos citando la fuente y compartiendo los derivados con la misma licencia. Verificado el 23 de octubre de 2026 en los metadatos de cada conjunto (`https://www.datos.gov.co/api/views/<id>.json`, campo `license`: `CC_40_BY_SA`).
 - **Cita en APA 7:** en `ficha_datos.md` y en las referencias del informe.
 - **Trazabilidad:** cada contrato del ranking conserva su identificador y el enlace a su página en SECOP II, así que cualquier resultado se puede verificar en la fuente.
 
@@ -34,7 +34,7 @@ De Procesos solo se incluyen las publicaciones de los procesos que cruzan con al
 
 ## 4. Datos de personas: tratamiento ético y normativa
 
-- **Normativa aplicable:** Ley Estatutaria 1581 de 2012 (protección de datos personales) y Ley 1712 de 2014 (transparencia y acceso a la información pública).
+- **Normativa aplicable:** algunos contratistas son personas naturales (se identifican con cédula), así que aplica la Ley Estatutaria 1581 de 2012 de protección de datos personales, junto con la Ley 1712 de 2014 de transparencia y acceso a la información pública.
 - **Sin datos personales del contratista:** no se descargaron nombres ni números de documento de los contratistas. Del proveedor solo se usan el tipo de documento y si es pyme o consorcio.
 - **Identificadores:** los del contrato, del proceso y de la entidad (NIT) son de entidades públicas y solo sirven para cruzar tablas y agrupar la validación; no son variables del modelo.
 - **Texto libre:** el objeto del contrato lo redacta la entidad y puede mencionar a personas naturales. No se usa como variable; en la página se muestra tal como aparece en SECOP II, solo para identificar el contrato.

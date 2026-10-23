@@ -19,10 +19,8 @@
 ## 2. Licencia o autorización
 
 - Son **datos abiertos** publicados por una entidad pública en el Portal Nacional de Datos Abiertos de Colombia, en cumplimiento de la Ley 1712 de 2014 (transparencia y acceso a la información pública).
-- El portal indica que sus conjuntos se publican con licencia **Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0)**: se pueden reutilizar, también con fines comerciales, citando la fuente y compartiendo las obras derivadas con la misma licencia.
-- **Antes de entregar:** confirmar la licencia en la sección «Acerca de este conjunto de datos» de cada conjunto. En PowerShell:
-  `(Invoke-RestMethod "https://www.datos.gov.co/api/views/jbjy-vk9h.json").license`
-- No se requiere autorización adicional: no se usan datos personales sensibles (ver `anexo_B_datos_reales.md`).
+- Los tres conjuntos se publican con licencia **Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0)**: se pueden reutilizar, también con fines comerciales, citando la fuente y compartiendo las obras derivadas con la misma licencia. Verificado el 23 de octubre de 2026 en los metadatos de cada conjunto (`https://www.datos.gov.co/api/views/<id>.json`, campo `license`: `CC_40_BY_SA`).
+- No se requiere autorización adicional: no se descargan datos personales de los contratistas (ver `anexo_B_datos_reales.md`).
 
 ## 3. Tablas descargadas
 

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Executive summary · SECOPE</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+  body { font-size: 10.4pt; line-height: 1.5; }
+  h1 { font-size: 17pt; margin: 4pt 0 4pt; }
+  .meta { font-size: 8.4pt; color: var(--gris); padding-bottom: 7pt; border-bottom: 1.5px solid var(--azul); margin-bottom: 10pt; }
+  h3 { color: var(--azul); font-size: 11pt; margin: 11pt 0 4pt; }
+</style>
+</head>
+<body>
+<div class="antetitulo">Executive summary · Machine Learning I · Universidad EAN</div>
+<h1>Prioritizing public contracts at risk of cost overruns (SECOP II)</h1>
+<div class="meta">Team SECOPE: Sebastián Gómez, Kimberly Moreno, Luly Castiblanco · October 2026 · kimmoreno03.github.io/ml1-trabajo-final</div>
+
+<h3>The problem</h3>
+<p>One in four competitively awarded public contracts in Colombia ends up costing more than its awarded value. Between 2021 and 2024, value additions in the 244,518 completed contracts we analyzed totaled COP 19.7 trillion, 16% to 20% of the awarded amount each year. Internal audit offices cannot review every contract, so they need to know where to look first.</p>
+
+<h3>What we built</h3>
+<p>An intrapreneurship proposal: a new way for internal audit offices to choose what to review. Using open SECOP II data, we trained a model that estimates, at the moment of award, the probability that a contract will receive value additions. It only uses information known at award time, such as the type of good or service, budget, agreed duration, competition, sector and region. We trained on 2021–2023 contracts, with cross-validation on entities the model had not seen, and tested once on 2024. A gradient boosting model was selected with a rule fixed in advance.</p>
+
+<h3>Results</h3>
+<p>Reviewing the 10% of 2024 contracts the model ranked riskiest, 65 out of 100 had a cost overrun, versus 25 at random. That 10% held 65% of the money added that year. The model finds 44% more overruns than the usual rule of reviewing the largest contracts first, which captures more money, so the two work best together. Results held across another year, another overrun definition and each procurement method.</p>
+
+<h3>Recommendation</h3>
+<p>Adopt the published ranking of 31,486 ongoing 2025–2026 contracts to decide what to review first, as capacity allows. At 10% capacity, that means 3,149 contracts. Validate it with a one-year pilot in one audit office, add a small random sample to monitor performance and bias, and retrain every year. It prioritizes; it does not prove wrongdoing, and every review needs human judgment.</p>
+
+<h3>Limits</h3>
+<p>It does not cover direct contracting, which has no awarded value, and it predicts whether an overrun happens, not its size.</p>
+</body>
+</html>
