@@ -4,14 +4,15 @@
 
 ## Sebastián Gómez (Jefe)
 
-**Herramienta:** Claude (Anthropic), en la aplicación de escritorio de Claude (modo Cowork), conectada a la carpeta del proyecto. Entre el 19 y el 22 de octubre de 2026.
+**Herramienta:** Claude (Anthropic), en la aplicación de escritorio de Claude (modo Cowork), conectada a la carpeta del proyecto. Entre el 19 y el 23 de octubre de 2026.
 
 **Para qué se usó:**
 
 1. Escribir y ajustar el código del cuaderno: descarga por la API con caché en parquet, limpieza y cruce de tablas, validación cruzada agrupada por entidad, búsqueda de hiperparámetros, regla automática del campeón, intervalos por bootstrap, priorización de contratos vigentes y exportación de resultados.
 2. Construir la página de resultados en GitHub Pages (HTML, CSS y JavaScript con Chart.js).
-3. Redactar la guía teórica y práctica del proyecto, el README y los borradores del informe, el resumen ejecutivo y estas fichas.
+3. Redactar la guía teórica y práctica del proyecto, el README y estas fichas.
 4. Explicar conceptos (PR-AUC frente a ROC-AUC, calibración, validación por entidad) y guiar el uso de git y GitHub.
+5. Verificar que el cuaderno corre de principio a fin: la IA lo ejecutó con los datos y la corrida del integrante, y agregó que descargue y entrene automáticamente cuando no hay datos ni corridas guardados.
 
 **Prompts representativos** (textuales):
 
@@ -80,4 +81,25 @@
 
 ## Luly Castiblanco (Crack)
 
-[Por confirmar: herramienta, prompt, qué se aceptó y qué se descartó. Si no usó IA, escribir «No usé herramientas de inteligencia artificial».]
+**Herramienta:** Gemini (Google)
+
+**Para qué se usó:** Para realizar la revisión técnica y la auditoría de los datos, comprobar la consistencia de los resultados del modelado predictivo, verificar las métricas de desempeño y validar la solidez del análisis antes de la presentación final del equipo.
+
+**Prompts representativos** (textuales):
+
+1. ¿Cómo podemos estructurar la validación cruzada agrupada por entidad para evitar el sesgo de filtración de información entre pliegues?
+2. Revisemos el comportamiento de la métrica PR-AUC frente al desbalance de clases en los contratos de 2024 para asegurar que la curva de calibración sea confiable.
+3. Verifica si el filtrado de valores atípicos y la limpieza de montos adjudicados en los datos abiertos afectaron la distribución de las modalidades contractuales.
+
+**Qué se aceptó:**
+
+- La separación estricta de la validación cruzada por entidad (para garantizar que el modelo no evaluara entidades que ya conocía).
+- El uso de la métrica PR-AUC como indicador principal de desempeño debido al desbalance de las clases (sobrecostos).
+- Las limitaciones metodológicas reportadas sobre la exclusión de contratos de contratación directa y régimen especial.
+
+**Qué se descartó o se modificó:**
+
+- Se descartó el uso directo de variables con fugas de datos (como el valor final, los días reales o el estado del contrato), ya que inflaban artificialmente las métricas predictivas a niveles inválidos.
+- Se ajustaron los umbrales de decisión para el ranking de contratos vigentes, buscando un equilibrio más realista entre la capacidad operativa de los equipos de control y la cobertura de los sobrecostos.
+
+**Verificación:** Validación cruzada iterativa contra el conjunto de datos de prueba y contraste de los resultados con las estadísticas históricas de adiciones de la plataforma SECOP II La IA ejecutó la versión final del documento no modificó el cuaderno.

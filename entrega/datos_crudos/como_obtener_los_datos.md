@@ -1,6 +1,8 @@
 # Cómo obtener los datos crudos
 
-Los datos descargados ocupan más de 100 MB en parquet, así que no se incluyen en el .zip. Son públicos y se obtienen de nuevo de la fuente oficial.
+Esta carpeta trae los archivos crudos de la descarga del 20 de octubre de 2026 en parquet: `contratos.parquet`, `procesos.parquet` (solo las publicaciones de los procesos que corresponden a los contratos descargados), los tres archivos de adiciones y `descarga.json`. No incluyen la contratación directa ni el régimen especial sin ofertas, excluidos desde la consulta.
+
+Para usarlos con el cuaderno, se copian en `data/2026-10-20/` dentro de la carpeta del proyecto. Para obtenerlos de nuevo desde la fuente oficial:
 
 ## Opción 1: desde el cuaderno (recomendada)
 
@@ -36,7 +38,7 @@ Invoke-WebRequest "https://www.datos.gov.co/resource/jbjy-vk9h.csv?`$limit=1000&
 | Archivo | Filas |
 | --- | ---: |
 | `contratos.parquet` | 442.367 |
-| `procesos.parquet` | 741.747 |
+| `procesos.parquet` | 741.747 (650.043 en esta carpeta) |
 | `adiciones_tope.parquet` | 35.554 |
 | `adiciones_validacion.parquet` | 2.973 |
 | `adiciones_vigentes.parquet` | 12.432 |

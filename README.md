@@ -5,12 +5,12 @@ Trabajo final de **Machine Learning I** (Maestría, Universidad EAN) · **Equipo
 Modelo de clasificación que estima, **en el momento de adjudicar** un proceso de contratación pública en Colombia, la probabilidad de que el contrato termine costando más de lo adjudicado. Con esa probabilidad se **ordenan por riesgo los contratos vigentes de 2025 y 2026 que todavía no tienen adiciones**, para que un equipo de control con capacidad limitada revise primero los más riesgosos. El modelo estima si ocurre un sobrecosto, **no su monto**.
 
 - **Cuaderno:** [`notebooks/sobrecosto_secop.ipynb`](notebooks/sobrecosto_secop.ipynb) · [abrir en Colab](https://colab.research.google.com/github/kimmoreno03/ml1-trabajo-final/blob/main/notebooks/sobrecosto_secop.ipynb)
-- **Entrega:** [`entrega/`](entrega/): informe, resumen ejecutivo en inglés, ficha de datos, declaración de IA, anexos de bonos y el archivo `ML1_PFI_SECOPE.zip`
+- **Entrega:** [`entrega/`](entrega/): informe, resumen ejecutivo en inglés, ficha de datos, declaración de IA y anexos de bonos. El archivo `ML1_PFI_SECOPE.zip`, con los datos crudos, se arma con `py entrega/armar_zip.py` y no se sube a git por su tamaño (unos 66 MB)
 - **Página de resultados:** [kimmoreno03.github.io/ml1-trabajo-final](https://kimmoreno03.github.io/ml1-trabajo-final/) · código en [`docs/`](docs/); los datos de [`docs/datos/`](docs/datos/) los genera el cuaderno
 
 ## Datos
 
-Datos abiertos de [datos.gov.co](https://www.datos.gov.co), descargados por la API Socrata dentro del cuaderno y guardados en parquet:
+Datos abiertos de [datos.gov.co](https://www.datos.gov.co), publicados por la Agencia Nacional de Contratación Pública - Colombia Compra Eficiente (licencia CC BY-SA 4.0), descargados por la API Socrata dentro del cuaderno y guardados en parquet. El ranking de `docs/datos/` es un derivado de estos datos y se comparte con la misma licencia. Los archivos crudos de la descarga van en `datos_crudos/` del .zip de la entrega:
 
 | Conjunto | ID | Uso |
 |---|---|---|
@@ -123,7 +123,7 @@ Si la carpeta no tiene datos ni corridas guardados (por ejemplo, en un equipo nu
 notebooks/sobrecosto_secop.ipynb   análisis, modelos, priorización y exportación
 docs/                              página web (GitHub Pages): index.html, app.js, estilos.css
 docs/datos/                        resultados que lee la página (JSON y CSV), generados por el cuaderno
-entrega/                           documentos de la entrega y ML1_PFI_SECOPE.zip
+entrega/                           documentos de la entrega y script que arma ML1_PFI_SECOPE.zip
 data/                              datos descargados en parquet (no se versiona)
 corridas/                          modelos y resultados de cada corrida (no se versiona)
 ```
