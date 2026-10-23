@@ -15,15 +15,15 @@
 ## 2. Licencia o autorización
 
 - Datos abiertos publicados en cumplimiento de la Ley 1712 de 2014 (transparencia y acceso a la información pública nacional).
-- El portal indica que sus conjuntos se publican con licencia Creative Commons Atribución-CompartirIgual 4.0 (CC BY-SA 4.0), que permite reutilizarlos citando la fuente.
+- Los tres conjuntos tienen licencia Creative Commons Atribución-CompartirIgual 4.0 Internacional (CC BY-SA 4.0), que permite reutilizarlos citando la fuente. Verificado el 23 de octubre de 2026 en los metadatos de cada conjunto (`https://www.datos.gov.co/api/views/<id>.json`, campo `license`: `CC_40_BY_SA`).
 - Se citan en APA 7 en `ficha_datos.md` y en las referencias del informe.
-- No se requirió autorización adicional. El equipo debe confirmar la licencia de cada conjunto en su página antes de entregar.
+- No se requirió autorización adicional.
 
 ## 3. Tratamiento ético
 
-- **Datos personales:** no se descargaron nombres ni documentos de los contratistas. Del proveedor solo se usan el tipo de documento y si es pyme o consorcio. Los identificadores que sí se usan (NIT de la entidad, proceso y contrato) son de entidades públicas y solo sirven para cruzar tablas y agrupar la validación; no son variables del modelo.
+- **Datos personales y normativa:** algunos contratistas son personas naturales (se identifican con cédula), así que aplica la Ley Estatutaria 1581 de 2012 de protección de datos personales. Por eso no se descargaron nombres ni documentos de los contratistas. Del proveedor solo se usan el tipo de documento y si es pyme o consorcio. Los identificadores que sí se usan (NIT de la entidad, proceso y contrato) son de entidades públicas y solo sirven para cruzar tablas y agrupar la validación; no son variables del modelo.
 - **Lo que se publica:** la página muestra el nombre de la entidad pública, el objeto del contrato y el enlace a SECOP II, que ya son públicos. No se publica información de personas naturales que no esté en la fuente.
 - **Uso del resultado:** el ranking indica dónde revisar primero. Una probabilidad alta no prueba ninguna irregularidad, y así se advierte en la página y en el informe.
 - **Sesgos posibles:** algunas modalidades, sectores y departamentos quedan sobrerrepresentados en la prioridad alta (por ejemplo, la licitación de obra pública, 5,3 veces su peso). Se recomienda revisar también una muestra al azar y vigilar el acierto por grupo.
-- **Calidad y honestidad:** los registros con errores evidentes (valores adjudicados incoherentes, crecimientos por encima del tope legal) se descartan y se informa cuántos son. Las cifras infladas por fuga de información se muestran solo como advertencia (anexo A del cuaderno).
+- **Calidad y honestidad:** los registros con errores evidentes (valores adjudicados incoherentes, crecimientos por encima del tope legal) se descartan y se informa cuántos son. Las cifras infladas por fuga de información se muestran solo como advertencia (anexo 2 del informe y anexo A del cuaderno).
 - **Redistribución:** no se redistribuyen los datos modificados como si fueran oficiales. El repositorio no incluye los datos descargados, solo el código para obtenerlos.
